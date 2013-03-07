@@ -1,0 +1,8 @@
+
+variant: stable
+login: replace_me
+password: replace_me
+data_ring: DRING
+metadata_ring: MDRING
+# sproxyd_conf_tmpl: ...
+# sindexd_conf_tmpl: ...

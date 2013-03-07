@@ -1,0 +1,13 @@
+# scality-node configuration file
+# add extra startup options for biziod and bizstorenode here
+
+BIZIOD_OPTIONS="-F local2"
+BIZSTORENODE_OPTIONS=""
+
+# to specify additional biziod params, uncomment the line below
+# keep bp as defined and add extra parameters separated by escaped semicolons (\;)
+# $i will be substituted by the disk number
+# the string must be single quoted
+BIZIOD_PARAMS='bp=$mnt_prefix$i'
+
+CORE_PATTERN=/var/tmp/core-%e-%p-%t

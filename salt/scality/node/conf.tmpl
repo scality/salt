@@ -1,0 +1,36 @@
+{%- for ring in ('data_ring', 'metadata_ring') %}
+supervisor loadConf {{pillar[ring]}}
+{%- set prefix = grains['id'].split('.')[0] + "-n" -%}
+{%- if ring == 'data_ring' -%}
+{%- set chunkapimdpoolsize = 30000000 -%}
+{%- set offset = 1 -%}
+{%- else -%}
+{%- set chunkapimdpoolsize = 5000000 -%}
+{%- set offset = 7 -%}
+{%- endif -%}
+{%- for n in range(6) %}
+use {{prefix}}{{n+offset}}
+node configSet msgstore_protocol_chord chordchecklocalnbchunks 300
+node configSet msgstore_protocol_chord chordctrlmaxparalleltasks 5
+node configSet msgstore_protocol_chord chordhttpsockettimeout 30
+node configSet msgstore_protocol_chord chordctrlrebuildrestbasepath /rebuild/arcdata
+node configSet msgstore_storage_asyncpersistentmemory pmmaxbiziostoreioidle 8
+node configSet msgstore_storage_asyncpersistentmemory pmminbiziostoreblockdelayS 30
+node configSet msgstore_storage_asyncpersistentmemory pmminbiziostoreblockdelaytimeoutS 60
+node configSet msgstore_storage_asyncpersistentmemory pmminlibbizioreconnectdelaytimeoutS 10
+node configSet msgstore_storage_chunkapi chunkapimaxdelete 32
+node configSet msgstore_storage_chunkapi chunkapimaxphysdelete 10
+node configSet msgstore_storage_chunkapi chunkapimaxread 96
+node configSet msgstore_storage_chunkapi chunkapimaxwrite 64
+node configSet msgstore_storage_chunkapi chunkapimdpoolsize {{chunkapimdpoolsize}}
+node configSet ov_cluster_node usessl 0
+node configSet msgstore_storage_chunkapi chunkapinoatime 1
+node configSet ov_core_logs logsoccurrences 48
+node configSet ov_core_logs logsmaxsize 2048
+node configSet ov_core_system net.ipv4.conf.all.forwarding 0
+node configSet ov_core_system net.ipv4.conf.default.forwarding 0
+node configSet ov_protocol_dns mainresolver 62.149.128.4,62.149.132.4
+node configSet ov_protocol_netscript "connect timeout" 5
+node configSet ov_protocol_netscript "socket timeout" 30
+{%- endfor -%}
+{%- endfor -%}

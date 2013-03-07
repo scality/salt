@@ -1,0 +1,28 @@
+supervisor loadConf {{pillar['metadata_ring']}}
+use {{grains['id']}}
+accessor configSet msgstore_protocol_restapi bwsdeferredpolicy -1
+accessor configSet msgstore_protocol_restapi bwsdeferredpolicy -1
+accessor configSet msgstore_protocol_restapi bwsdrvdata arc
+accessor configSet msgstore_storage_chordbucket  bwsdbmesamaincos 4
+accessor configSet msgstore_protocol_restapi bwsdrvdataopts "sproxyd_srv=
+{%- for node in pillar['nodes'] -%}
+{{node}}:81
+{%- if not loop.last -%}
+,
+{%- endif -%}
+{%- endfor -%}
+;sproxyd_uri_arc=/proxy/arc;sproxyd_uri_chord=/proxy/chord"
+accessor configSet msgstore_protocol_restapi bwsdrvmetadataopts ""
+accessor configSet ov_core_logs logsoccurrences 48
+accessor configSet msgstore_storage_chordbucket bwsdbmesahost 127.0.0.1:81
+accessor configSet msgstore_storage_chordbucket bwsdbmesauri /sindexd.fcgi
+accessor configSet msgstore_storage_chordbucket bwsdbmesamaincos 4
+accessor configSet msgstore_storage_chordbucket bwsdbmesacos 2
+accessor configSet ov_core_logs logsmaxsize 2048
+accessor configSet ov_protocol_dns mainresolver 127.0.0.1
+accessor configSet ov_protocol_netscript "connect timeout" 5
+accessor configSet ov_protocol_netscript "socket timeout" 30
+accessor configSet msgstore_protocol_restapi chordsplitsizetrigger 4000000
+accessor configSet msgstore_protocol_restapi chordsplitsizeblock 2000000
+accessor configSet msgstore_protocol_restapi bwssplitsizetrigger 4000000
+accessor configSet msgstore_protocol_restapi bwssplitsizeblock 2000000

@@ -1,0 +1,9 @@
+scality-rest-connector	scality-rest-connector/disable-default-apache-ports	boolean	false
+scality-rest-connector	scality-rest-connector/license	note	
+scality-rest-connector	scality-rest-connector/use-ssl	boolean	false
+scality-rest-connector	scality-rest-connector/connector-ip	string	{{ salt['network.ip_addrs']()[0] }}
+scality-rest-connector	scality-rest-connector/accept-license	boolean	true
+scality-rest-connector	scality-rest-connector/setup-sagentd	boolean	true
+scality-rest-connector	scality-rest-connector/keep-config	boolean	true
+scality-rest-connector	scality-rest-connector/name-prefix	string	{{ grains['id'] }}-
+scality-rest-connector	scality-rest-connector/restart	boolean	false

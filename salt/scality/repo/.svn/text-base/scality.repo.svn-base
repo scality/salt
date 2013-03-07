@@ -1,0 +1,7 @@
+[scality-{{pillar['variant']|default('stable')}}]
+name=Scality {{pillar['variant']|default('stable')|capitalize}} - RHEL $releasever - $basearch
+baseurl=http://{{pillar['login']|default('please_define_login_in_pillar')}}:{{pillar['password']}}@packages.scality.com/{{pillar['variant']|default('stable')}}/centos/$releasever/$basearch/
+enabled=1
+gpgcheck=0
+
+

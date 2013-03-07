@@ -1,0 +1,52 @@
+10
+
+dir
+33075
+svn+ssh://svn.xe15.com/svn/bizanga/CSE/trunk/tools/salt/states/scality
+svn+ssh://svn.xe15.com/svn/bizanga
+
+
+
+2013-02-08T09:31:19.474125Z
+32740
+christophe
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+d0ba0a31-f0f3-0310-b3bb-b8bd854a737c
+
+repo
+dir
+
+node
+dir
+
+rest-connector
+dir
+
+sagentd
+dir
+
+sproxyd
+dir
+
+ssd
+dir
+
+srebuildd
+dir
+
+sindexd
+dir
+

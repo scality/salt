@@ -1,0 +1,16 @@
+
+sindexd:
+  pkg:
+    - installed
+    - name: scality-sindexd-httpd
+  service:
+    - running
+    - name: scality-sindexd
+    - watch:
+      - pkg: scality-sindexd-httpd
+      - file: sindexd
+  file:
+    - managed
+    - name: /etc/sindexd.conf
+    - source: salt://scality/generated/sindexd.conf
+

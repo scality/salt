@@ -1,0 +1,16 @@
+
+sproxyd:
+  pkg:
+    - installed
+    - name: scality-sproxyd-httpd
+  service:
+    - running
+    - name: scality-sproxyd
+    - watch:
+      - pkg: scality-sproxyd-httpd
+      - file: sproxyd
+  file:
+    - managed
+    - name: /etc/sproxyd.conf
+    - source: salt://scality/generated/sproxyd.conf
+

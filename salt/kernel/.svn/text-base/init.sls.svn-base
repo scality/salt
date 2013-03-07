@@ -1,0 +1,9 @@
+vm.swappiness:
+    sysctl:
+      - present
+      - value: 1
+
+vm.min_free_kbytes:
+    sysctl:
+        - present
+        - value: 2000000

@@ -1,0 +1,10 @@
+variant: stable
+data_ring: test
+metadata_ring: test
+mount_prefix: /scality/disk
+nb_nodes: 3
+nb_disks: 2
+supervisor_ip: 172.16.35.11
+nb_ssds: 6
+mount_prefix_ssd: /scality/meta
+

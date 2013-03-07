@@ -1,0 +1,160 @@
+#
+# sproxyd config file
+#
+
+#number of worker threads per task pool
+#n_workers = 100
+
+#bind address
+#bind = 0.0.0.0
+
+#bind port
+port = 10000
+
+#connections backlog
+#backlog = 10000
+
+#number of incoming requests processed concurrently
+#n_responders = 500
+
+syslog_facility = "local0"
+#chroot_path =
+#uid =
+#gid =
+
+#enable or disable consistency check on reads, when requested
+consistent_reads = 1
+
+#enable or disable consistency check on writes, when requested
+consistent_writes = 1
+
+
+
+#
+# base_path=/chord configuration
+#
+[chord]
+
+#
+# STRUCTURAL PARAMETERS (do not change them when set for a storage Ring)
+#
+
+#ring driver
+ring_driver = "chord"
+
+
+#
+# RING ACCESS PARAMETERS
+#
+
+#bootstraplist (port 4244 by default)
+#eg. bstraplist = 1.2.3.4:4244,1.2.3.4:4245
+bstraplist = {{ salt['scality.bootstrap_list'](pillar['data_ring']) }}
+
+
+
+
+#
+# base_path=/arc configuration
+#
+[arc]
+
+#
+# STRUCTURAL PARAMETERS (do not change them when set for a storage Ring)
+#
+
+#ring driver
+ring_driver = "arc"
+
+#how many equally-spaced areas the RING is configured to support
+arc_schema = 6
+
+
+#
+# RING ACCESS PARAMETERS
+#
+
+#bootstraplist (port 4244 by default)
+#eg. bstraplist = 1.2.3.4:4244,1.2.3.4:4245
+bstraplist = {{ salt['scality.bootstrap_list'](pillar['data_ring']) }}
+
+
+#
+# ARC STORAGE OVERHEAD CONTROL
+#
+
+#object class to use for replication
+object_class = 2
+
+#minimum size in bytes where object is not stored replicated
+#(-1: always replicated)
+replication_size_threshold = -1
+
+#maximum number of arc data chunks
+n_data_parts = 4
+
+#number of arc coding chunks
+n_coding_parts = 2
+
+#minimum size in bytes of a arc data chunk
+min_data_part_length = 20000
+
+
+#
+# ARC PERFORMANCE TUNING
+#
+
+#number of parallel tasks in the main task pool
+main_n_workers = 10
+
+#number of parallel tasks in the sub task pool
+sub_n_workers = 10
+
+#number of parallel tasks in the cache task pool
+cache_n_workers = 10
+
+#size in bytes of data stripes when cutting data on put
+stripe_size = 262144
+
+#size in bytes of data buffers read at once when reconstructing
+get_reconstruct_buffer_size = 1048576
+
+#maximum number of write buffers queued from each client before blocking
+max_stripes_in_write_queue = 2
+
+#enable or disable caching of data and metadata
+#(speeds up gets that need reconstruction)
+chordcache_enabled = 1
+
+
+
+#sproxyd HOWTO using curl:
+
+#do a PUT with base64-encoded user metadata ("myusermd")
+#curl -0 -XPUT -H "x-scal-usermd: bXl1c2VybWQ=" http://localhost:81/proxy/chord/88FF0A8375F3112C8E340A38E38FE93438412120 --data-binary @/etc/hosts
+
+#do a UPDATEMD (put partial): ("newusermd")
+#curl -0 -XPUT -H "x-scal-cmd: update-usermd" -H "x-scal-usermd: bmV3dXNlcm1k" http://localhost:81/proxy/chord/88FF0A8375F3112C8E340A38E38FE93438412120
+
+#do a GET
+#curl http://localhost:81/proxy/chord/88FF0A8375F3112C8E340A38E38FE93438412120
+
+#do a GET with a range (retrieve 500 bytes from the byte 1000).
+#ranges with at least one missing bound are not supported.
+#curl -r 1000-1499 http://localhost:81/proxy/chord/88FF0A8375F3112C8E340A38E38FE93438412120
+
+#do a STAT (dumps all HTTP headers received, user metadata included)
+#curl -I http://localhost:81/proxy/chord/88FF0A8375F3112C8E340A38E38FE93438412120
+
+#do a DELETE
+#curl -XDELETE http://localhost:81/proxy/chord/88FF0A8375F3112C8E340A38E38FE93438412120
+
+
+#get statistics information
+#curl http://localhost:81/proxy/chord/.stats
+
+#reset statistics information
+#curl -XDELETE http://localhost:81/proxy/chord/.stats
+
+#get active configuration parameters, each on a line with format key=value
+#curl http://localhost:81/proxy/chord/.conf

@@ -1,0 +1,11 @@
+
+sindexd-genconf:
+  pkg.installed:
+    - names:
+        - scality-ringsh
+        - python-scalitycs
+  file:
+    - managed
+    - template: jinja
+    - name: /srv/salt/scality/generated/sindexd.conf
+    - source: {{pillar['sindexd_conf_tmpl']|default('salt://scality/sindexd/sindexd.conf.tmpl')}}
