@@ -1,1 +1,0 @@
-scality-sagentd	scality-sagentd/supervisor-ip	string	{{ pillar['supervisor_ip'] }}

@@ -1,6 +1,0 @@
-base:
-  '*':
-    - globals
-  'cen6-node*':
-    - sample
-
