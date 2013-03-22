@@ -1,2 +1,0 @@
-# Scality {{pillar['variant']|default('stable')}} for {{grains['oscodename']}}
-deb http://{{pillar['login']|default('please_define_login_in_pillar')}}:{{pillar['password']}}@packages.scality.com/{{pillar['variant']|default('stable')}}/ubuntu/ {{grains['oscodename']}} main
