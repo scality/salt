@@ -10,6 +10,8 @@ scality-ssd-{{n}}:
   cmd.run:
     - name: echo "nvp={{mount_prefix_ssd}}{{loop.cycle(*ssds)}}/disk{{loop.index}}" >> /etc/biziod/bizobj.disk{{loop.index}}
     - unless: grep -q '^nvp=' /etc/biziod/bizobj.disk{{loop.index}}
+    - require:
+      - cmd: scality-node
   file.directory:
     - name: {{mount_prefix_ssd}}{{loop.cycle(*ssds)}}/disk{{loop.index}}
     - makedirs: True

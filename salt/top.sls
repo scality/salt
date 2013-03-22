@@ -1,25 +1,25 @@
 base:
    'dc03scalitystr0*':
+       - rsyslog
+       - ntp
        - scality.repo
        - scality.ringsh
        - scality.sproxyd
        - scality.node
-       - rsyslog
-       - ntp
        - kernel
    'salt' :
        - scality.supervisor
    'dc03scalityfe*':
-       - rsyslog-conn
+       - rsyslog
+       - ntp
        - scality.repo
        - scality.ringsh
        - scality.rest-connector
        - scality.sindexd
-       - ntp
    'dc03scalitybck*':
-       - rsyslog-conn
+       - rsyslog
+       - ntp
        - scality.repo
        - scality.ringsh
        - scality.rest-connector
        - scality.sindexd
-       - ntp

@@ -1,9 +1,10 @@
 supervisor loadConf {{pillar['metadata_ring']}}
-use {{grains['id']}}
+use {{grains['id']}}-c1
 accessor configSet msgstore_protocol_restapi bwsdeferredpolicy -1
 accessor configSet msgstore_protocol_restapi bwsdeferredpolicy -1
 accessor configSet msgstore_protocol_restapi bwsdrvdata arc
 accessor configSet msgstore_storage_chordbucket  bwsdbmesamaincos 4
+{%- if pillar['nodes'] is defined %}
 accessor configSet msgstore_protocol_restapi bwsdrvdataopts "sproxyd_srv=
 {%- for node in pillar['nodes'] -%}
 {{node}}:81
@@ -12,6 +13,7 @@ accessor configSet msgstore_protocol_restapi bwsdrvdataopts "sproxyd_srv=
 {%- endif -%}
 {%- endfor -%}
 ;sproxyd_uri_arc=/proxy/arc;sproxyd_uri_chord=/proxy/chord"
+{%- endif %}
 accessor configSet msgstore_protocol_restapi bwsdrvmetadataopts ""
 accessor configSet ov_core_logs logsoccurrences 48
 accessor configSet msgstore_storage_chordbucket bwsdbmesahost 127.0.0.1:81

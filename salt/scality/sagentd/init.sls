@@ -1,17 +1,21 @@
-scality-sagentd:
+include:
+  - debconf
+
 {%- if grains['os_family'] == 'Debian' %}
-  file:
-    - managed
-    - template: jinja
-    - name: /tmp/sagentd.selections
-    - source: salt://scality/sagentd/sagentd.selections
+scality-sagentd-debconf:
+  debconf.set:
+    - name: scality-sagentd
+    - data:
+        scality-sagentd/supervisor-ip: {'type': 'string', 'value': {{pillar['supervisor_ip']}}}
+    - require:
+      - pkg: debconf-utils
 {%- endif %}
+scality-sagentd:
   pkg:
     - installed
 {%- if grains['os_family'] == 'Debian' %}
-    - debconf: file:///tmp/sagentd.selections
     - require:
-        - file: /tmp/sagentd.selections
+      - debconf: scality-sagentd-debconf
 {%- endif %}
 {%- if grains['os_family'] == 'RedHat' %}
   cmd.run:

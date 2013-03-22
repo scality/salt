@@ -1,9 +1,14 @@
+include:
+  - scality.ringsh
 
 lighttpd:
   pkg:
     - installed
     - names:
+        - lighttpd
+{%- if grains['os_family'] == 'RedHat' %}
         - lighttpd-fastcgi
+{%- endif %}
   service:
     - running
     - name: lighttpd
@@ -39,4 +44,6 @@ scality-sindexd:
     - name: /etc/sindexd.conf
     - template: jinja
     - source: {{pillar['sindexd_conf_tmpl']|default('salt://scality/sindexd/sindexd.conf.tmpl')}}
+    - require:
+      - file: scality-ringsh
 

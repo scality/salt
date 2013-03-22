@@ -1,6 +1,7 @@
 {%- for ring in ('data_ring', 'metadata_ring') %}
 supervisor loadConf {{pillar[ring]}}
 {%- set prefix = grains['id'].split('.')[0] + "-n" -%}
+{%- set prefix = grains['id'] + "-n" -%}
 {%- if ring == 'data_ring' -%}
 {%- set chunkapimdpoolsize = 30000000 -%}
 {%- set offset = 1 -%}
