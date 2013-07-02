@@ -20,7 +20,7 @@ scality-supervisor:
 {%- endif %}
 {%- if grains['os_family'] == 'RedHat' %}
   cmd.run:
-    - name: echo "y\n" | /usr/local/bin/scality-supervisor-config 
+    - name: echo "y" | /usr/local/bin/scality-supervisor-config 
     - template: jinja
     - unless: test -d /etc/scality-supervisor
     - require:
@@ -31,4 +31,22 @@ scality-supervisor:
     - watch:
       - pkg: scality-supervisor
 
+{%- if grains['os_family'] == 'RedHat' %}
+httpd:
+{%- else %}
+apache2:
+{%- endif %}
+  service:
+    - running
+    - enable: True
+    - require:
+      - pkg: scality-supervisor
 
+
+{%- for ring in ('data_ring', 'metadata_ring') %}
+{{pillar[ring]}}:
+  scality_ring.present:
+    - supervisor: {{pillar['supervisor_ip']}} 
+    - require:
+      - service: scality-supervisor
+{% endfor %}

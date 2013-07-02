@@ -45,7 +45,8 @@ scality-node:
       - host: {{grains['id']}}
 {%- endif %}
   service:
-    - enabled
+    - running
+    - enable: true
     - watch:
       - file: /etc/sysconfig/scality-node
 # cannot specify running, hang because bizstorenode does not detach from its terminal
@@ -82,4 +83,23 @@ extend:
     service:
       - watch:
         - file: /etc/rsyslog.d/scality-nodes.conf
+
+register-{{grains['id']}}:
+  scality_node:
+    - registered
+    - name: {{grains['id']}}
+    - address: {{prod_ip}}
+    - supervisor: {{pillar['supervisor_ip']}}
+    - require:
+      - service: scality-sagentd
+      
+{%- for node in range(pillar['nb_nodes']) %}
+{{grains['id']}}-n{{loop.index}}:
+  scality_node.added:
+    - ring: {{pillar['data_ring']}} 
+    - supervisor: {{pillar['supervisor_ip']}} 
+    - require:
+      - scality_node: register-{{grains['id']}}
+{% endfor %}
+
 
