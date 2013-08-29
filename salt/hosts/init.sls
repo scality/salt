@@ -1,5 +1,5 @@
 {{grains['id']}}:
   host:
     - present
-    - ip: {{salt['network.ip_addrs'](interface=pillar['prod_iface'])[0]}}
+    - ip: {{salt['ip_interfaces'](interface=pillar['prod_iface'])[0]}}
 

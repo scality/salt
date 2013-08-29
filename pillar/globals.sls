@@ -15,5 +15,12 @@ nodes:
   - 10.13.252.24
   - 10.13.252.25
   - 10.13.252.26
+interfaces:
+  - eth0
+  - eth0
+  - eth0
+  - eth0
+  - eth0
+  - eth0
 # sproxyd_conf_tmpl: ...
 # sindexd_conf_tmpl: ...
