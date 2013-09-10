@@ -2,6 +2,7 @@ include:
   - debconf
   - rsyslog
   - scality.sagentd
+  - scality.ringsh
 
 {%- set prod_ip = salt['network.ip_addrs'](interface=pillar['prod_iface'])[0] %}
 {%- set name_prefix = grains['id'] + '-c' %}
@@ -52,6 +53,9 @@ scality-rest-connector-config:
     - name: /tmp/rest-connector-conf.tmpl
     - source: salt://scality/rest-connector/conf.tmpl
   cmd.run:
+    - require:
+      - pkg: scality-ringsh
+      - file: scality-ringsh
     - watch:
       - file: /tmp/rest-connector-conf.tmpl
     - name: /usr/local/bin/ringsh -f /tmp/rest-connector-conf.tmpl
