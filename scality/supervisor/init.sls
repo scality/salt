@@ -1,5 +1,8 @@
 include:
-  - debconf
+  - scality.req
+  - scality.repo
+
+{% set variant = pillar['variant']|default('stable') %}
 
 {%- if grains['os_family'] == 'Debian' %}
 scality-supervisor-debconf:
@@ -14,8 +17,9 @@ scality-supervisor-debconf:
 scality-supervisor:
   pkg:
     - installed
-{%- if grains['os_family'] == 'Debian' %}
     - require:
+      - pkgrepo: scality-{{variant}}
+{%- if grains['os_family'] == 'Debian' %}
       - debconf: scality-supervisor-debconf
 {%- endif %}
 {%- if grains['os_family'] == 'RedHat' %}

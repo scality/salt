@@ -1,7 +1,6 @@
 rsyslog:
-  pkg.installed
-
-rsyslog:
+  pkg:
+    - installed
   service.running:
     - enable: True
     - watch:

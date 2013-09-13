@@ -1,9 +1,7 @@
 include:
-  - debconf
-  - ntp
-  - rsyslog
+  - scality.req
+  - scality.repo
   - scality.sagentd
-  - scality.hosts
 
 {%- set prod_ip = salt['network.ip_addrs'](interface=pillar['prod_iface'])[0] %}
 {%- set name_prefix = grains['id'] + '-n' %}

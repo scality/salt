@@ -1,5 +1,6 @@
 include:
-  - debconf
+  - scality.req
+  - scality.repo
 
 {%- if grains['os_family'] == 'Debian' %}
 scality-sagentd-debconf:

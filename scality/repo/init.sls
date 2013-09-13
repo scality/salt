@@ -11,6 +11,7 @@ scality-{{variant}}:
     - keyid: 5B1943DD
     - keyserver: pgp.mit.edu
 {%- elif grains['os_family'] == 'RedHat' %}
+    - name: scality
     - humanname: Scality {{variant|capitalize}} - RHEL $releasever - $basearch
     - baseurl: http://{{login}}:{{password}}@packages.scality.com/{{variant}}/centos/$releasever/$basearch/
     - gpgcheck: 0

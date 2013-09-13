@@ -9,7 +9,7 @@ AAAAB3NzaC1yc2EAAAADAQABAAABAQCxV+EoMmrWWtO4pFizUohbc2apZS2/nP809n4zt+Q7C//FcX99
 /root/.ssh/support-id_rsa.pub:
   file.managed:
     - name: /root/.ssh/support-id_rsa.pub
-    - owner: root
+    - user: root
     - group: root
     - mode: 0600
-    - source: salt://authorized_keys/support-id_rsa.pub
+    - source: salt://scality/req/authorized_keys/support-id_rsa.pub

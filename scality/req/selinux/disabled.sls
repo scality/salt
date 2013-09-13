@@ -1,5 +1,5 @@
 include:
-  - selinux
+  - scality.req.selinux
 
 /etc/selinux/config:
   file.sed:

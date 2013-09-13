@@ -1,6 +1,6 @@
 include:
-  - debconf
-  - rsyslog
+  - scality.req
+  - scality.repo
   - scality.sagentd
   - scality.ringsh
 

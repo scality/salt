@@ -1,4 +1,6 @@
 include:
+  - scality.req
+  - scality.repo
   - scality.cs
 
 sproxyd:
@@ -6,7 +8,7 @@ sproxyd:
     - installed
     - names:
 {%- if grains['os_family'] == 'Debian' %}
-        - scality-sproxyd
+        - scality-sproxyd-apache2
 {%- endif %}
 {%- if grains['os_family'] == 'RedHat' %}
         - scality-sproxyd-httpd
