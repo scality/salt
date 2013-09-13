@@ -51,7 +51,7 @@ ring_driver = "arcdata"
 
 #bootstraplist (port 4244 by default)
 #eg. bstraplist = 1.2.3.4:4244,1.2.3.4:4245
-bstraplist = {{ salt['scality.bootstrap_list'](pillar['data_ring']) }}
+bstraplist = {{ salt['scality.bootstrap_list'](salt['pillar.get']('scality:data_ring', 'RING')) }}
 
 
 #

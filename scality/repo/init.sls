@@ -1,7 +1,8 @@
-{% set login = pillar['login']|default('please_define_login_in_pillar') %}
-{% set password = pillar['password'] %}
-{% set variant = pillar['variant']|default('stable') %}
-scality-{{variant}}:
+{% set login = salt['pillar.get']('scality:login', 'please_define_login_in_pillar') %}
+{% set password = salt['pillar.get']('scality:password', 'please_define_password_in_pillar') %}
+{% set variant = salt['pillar.get']('scality:variant', 'stable') %}
+
+scality-repository:
   pkgrepo.managed:
 {%- if grains['os'] == 'Ubuntu' %}
     - name: deb http://{{login}}:{{password}}@packages.scality.com/{{variant}}/ubuntu/ {{grains['oscodename']}} main

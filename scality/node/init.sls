@@ -3,20 +3,28 @@ include:
   - scality.repo
   - scality.sagentd
 
-{%- set prod_ip = salt['network.ip_addrs'](interface=pillar['prod_iface'])[0] %}
-{%- set name_prefix = grains['id'] + '-n' %}
+{%- set supervisor_ip = salt['pillar.get']('scality:supervisor_ip', '127.0.0.1') %}
+{%- set prod_iface = salt['pillar.get']('scality:prod_iface', 'eth0') %}
+{%- set nb_nodes = salt['pillar.get']('scality:nb_nodes', '6') %}
+{%- set mount_prefix = salt['pillar.get']('scality:mount_prefix', '/scality/disk') %}
+{%- set nb_disks = salt['pillar.get']('scality:nb_disks', '1') %}
+{%- set name_prefix = salt['pillar.get']('scality:name_prefix', grains['id'] + '-n') %}
+{%- set data_ring = salt['pillar.get']('scality:data_ring', 'RING') %}
+
+{%- set prod_ip = salt['network.ip_addrs'](interface=prod_iface)[0] %}
+
 {%- if grains['os_family'] == 'Debian' %}
 scality-node-debconf:
   debconf.set:
     - name: scality-node
     - data:
-        scality-node/node-ip: {'type': 'string', 'value': {{prod_ip}}}
-        scality-node/processes-count: {'type': 'string', 'value': {{pillar['nb_nodes']}}}
+        scality-node/node-ip: {'type': 'string', 'value': {{ prod_ip }}}
+        scality-node/processes-count: {'type': 'string', 'value': {{ nb_nodes }}}
         scality-node/accept-license: {'type': 'boolean', 'value': True}
-        scality-node/mount-prefix: {'type': 'string', 'value': {{pillar['mount_prefix']}}}
-        scality-node/biziod-count: {'type': 'string', 'value': {{pillar['nb_disks']}}}
+        scality-node/mount-prefix: {'type': 'string', 'value': {{ mount_prefix }}}
+        scality-node/biziod-count: {'type': 'string', 'value': {{ nb_disks }}}
         scality-node/use-ssl: {'type': 'boolean', 'value': False}
-        scality-node/name-prefix: {'type': 'string', 'value': {{name_prefix}}}
+        scality-node/name-prefix: {'type': 'string', 'value': {{ name_prefix }}}
         scality-node/keep-config: {'type': 'boolean', 'value': True}
         scality-node/tier2-enabled: {'type': 'boolean', 'value': False}
         scality-node/warning-mount: {'type': 'boolean', 'value': True}
@@ -28,19 +36,23 @@ scality-node-debconf:
 scality-node:
   pkg:
     - installed
+{%- if pillar['scality:version'] is defined %}
+    - version: {{ salt['pillar.get']('scality:version') }}
+{%- endif %}
     - require:
+      - pkgrepo: scality-repository
       - pkg: scality-sagentd
 {%- if grains['os_family'] == 'Debian' %}
       - debconf: scality-node-debconf
 {%- endif %}
 {%- if grains['os_family'] == 'RedHat' %}
   cmd.run:
-    - name: /usr/local/bin/scality-node-config -p {{pillar['mount_prefix']}} -d {{pillar['nb_disks']}} -n {{pillar['nb_nodes']}} -m {{name_prefix}} -i {{prod_ip}}
+    - name: /usr/local/bin/scality-node-config -p {{ mount_prefix }} -d {{ nb_disks }} -n {{ nb_nodes }} -m {{ name_prefix }} -i {{ prod_ip }}
     - template: jinja
     - unless: test -d /etc/scality-node-1
     - require:
       - pkg: scality-node
-      - host: {{grains['id']}}
+      - host: {{ grains['id'] }}
 {%- endif %}
   service:
     - running
@@ -85,17 +97,17 @@ extend:
 register-{{grains['id']}}:
   scality_node:
     - registered
-    - name: {{grains['id']}}
-    - address: {{prod_ip}}
-    - supervisor: {{pillar['supervisor_ip']}}
+    - name: {{ grains['id'] }}
+    - address: {{ prod_ip }}
+    - supervisor: {{ supervisor_ip }}
     - require:
       - service: scality-sagentd
       
-{%- for node in range(pillar['nb_nodes']) %}
+{%- for node in range(nb_nodes) %}
 {{grains['id']}}-n{{loop.index}}:
   scality_node.added:
-    - ring: {{pillar['data_ring']}} 
-    - supervisor: {{pillar['supervisor_ip']}} 
+    - ring: {{ data_ring }} 
+    - supervisor: {{ supervisor_ip }} 
     - require:
       - scality_node: register-{{grains['id']}}
 {% endfor %}

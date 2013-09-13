@@ -2,7 +2,7 @@ include:
   - scality.req
   - scality.repo
 
-{% set variant = pillar['variant']|default('stable') %}
+{% set supervisor_ip = salt['pillar.get']('scality:supervisor_ip', '127.0.0.1') %}
 
 {%- if grains['os_family'] == 'Debian' %}
 scality-supervisor-debconf:
@@ -17,8 +17,11 @@ scality-supervisor-debconf:
 scality-supervisor:
   pkg:
     - installed
+{%- if pillar['scality:version'] is defined %}
+    - version: {{ salt['pillar.get']('scality:version') }}
+{%- endif %}
     - require:
-      - pkgrepo: scality-{{variant}}
+      - pkgrepo: scality-repository
 {%- if grains['os_family'] == 'Debian' %}
       - debconf: scality-supervisor-debconf
 {%- endif %}
@@ -47,10 +50,10 @@ apache2:
       - pkg: scality-supervisor
 
 
-{%- for ring in ('data_ring', 'metadata_ring') %}
-{{pillar[ring]}}:
+{%- for ring in ('scality:data_ring', 'scality:metadata_ring') %}
+{{ salt['pillar.get'](ring, 'RING') }}:
   scality_ring.present:
-    - supervisor: {{pillar['supervisor_ip']}} 
+    - supervisor: {{ supervisor_ip }} 
     - require:
       - service: scality-supervisor
 {% endfor %}

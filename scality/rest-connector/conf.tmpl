@@ -1,4 +1,4 @@
-supervisor loadConf {{pillar['metadata_ring']}}
+supervisor loadConf {{salt['pillar.get']('scality:metadata_ring', 'META')}}
 use {{grains['id']}}-c1
 accessor configSet msgstore_protocol_restapi bwsdeferredpolicy -1
 accessor configSet msgstore_protocol_restapi bwsdeferredpolicy -1
@@ -6,7 +6,7 @@ accessor configSet msgstore_protocol_restapi bwsdrvdata arc
 accessor configSet msgstore_storage_chordbucket  bwsdbmesamaincos 4
 {%- if pillar['nodes'] is defined %}
 accessor configSet msgstore_protocol_restapi bwsdrvdataopts "sproxyd_srv=
-{%- for node in pillar['nodes'] -%}
+{%- for node in salt['pillar.get']('nodes', '') -%}
 {{node}}:81
 {%- if not loop.last -%}
 ,

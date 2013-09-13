@@ -5,8 +5,6 @@ rsyslog:
     - enable: True
     - watch:
       - file: /etc/rsyslog.conf
-
-/etc/rsyslog.conf:
-  file:
-    - managed
-    - source : salt://rsyslog/rsyslog.conf
+  file.managed:
+    - name: /etc/rsyslog.conf
+    - source : salt://scality/req/rsyslog/rsyslog.conf

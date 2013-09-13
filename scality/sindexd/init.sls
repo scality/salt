@@ -29,11 +29,16 @@ lighttpd:
 scality-sindexd:
   pkg:
     - installed
+{%- if pillar['scality:version'] is defined %}
+    - version: {{ salt['pillar.get']('scality:version') }}
+{%- endif %}
     - names:
         - scality-sindexd
         - lighttpd
         - scality-ringsh
         - python-scalitycs
+    - require:
+      - pkgrepo: scality-repository
   service:
     - running
     - name: scality-sindexd
@@ -43,7 +48,7 @@ scality-sindexd:
     - managed
     - name: /etc/sindexd.conf
     - template: jinja
-    - source: {{pillar['sindexd_conf_tmpl']|default('salt://scality/sindexd/sindexd.conf.tmpl')}}
+    - source: {{ salt['pillar.get']('scality:sindexd_conf_tmpl', 'salt://scality/sindexd/sindexd.conf.tmpl')}}
     - require:
       - file: scality-ringsh
 

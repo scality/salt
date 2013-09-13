@@ -4,14 +4,16 @@ include:
   - scality.sagentd
   - scality.ringsh
 
-{%- set prod_ip = salt['network.ip_addrs'](interface=pillar['prod_iface'])[0] %}
+{%- set supervisor_ip = salt['pillar.get']('scality:supervisor_ip', '127.0.0.1') %}
+{%- set prod_iface = salt['pillar.get']('scality:prod_iface', 'eth0') %}
+{%- set prod_ip = salt['network.ip_addrs'](interface=prod_iface)[0] %}
 {%- set name_prefix = grains['id'] + '-c' %}
 {%- if grains['os_family'] == 'Debian' %}
 scality-rest-connector-debconf:
   debconf.set:
     - name: scality-rest-connector
     - data:
-        scality-rest-connector/supervisor-ip: {'type': 'string', 'value': {{pillar['supervisor_ip']}}}
+        scality-rest-connector/supervisor-ip: {'type': 'string', 'value': {{ supervisor_ip }}}
         scality-rest-connector/disable-default-apache-ports: {'type': 'boolean', 'value': False}
         scality-rest-connector/use-ssl: {'type': 'boolean', 'value': False}
         scality-rest-connector/connector-ip: {'type': 'string', 'value': {{prod_ip}}}
@@ -26,14 +28,18 @@ scality-rest-connector-debconf:
 scality-rest-connector:
   pkg:
     - installed
+{%- if pillar['scality:version'] is defined %}
+    - version: {{ salt['pillar.get']('scality:version') }}
+{%- endif %}
     - require:
+      - pkgrepo: scality-repository
       - pkg: scality-sagentd
 {%- if grains['os_family'] == 'Debian' %}
       - debconf: scality-sagentd-debconf
 {%- endif %}
 {%- if grains['os_family'] == 'RedHat' %}
   cmd.run:
-    - name: echo -e "yy\n\n\n" | /usr/local/bin/scality-rest-connector-config -m {{name_prefix}} -i {{prod_ip}}
+    - name: echo -e "yy\n\n\n" | /usr/local/bin/scality-rest-connector-config -m {{ name_prefix }} -i {{ prod_ip }}
     - template: jinja
     - unless: test -d /etc/scality-rest-connector
     - require:

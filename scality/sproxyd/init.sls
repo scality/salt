@@ -6,6 +6,9 @@ include:
 sproxyd:
   pkg:
     - installed
+{%- if pillar['scality:version'] is defined %}
+    - version: {{ salt['pillar.get']('scality:version') }}
+{%- endif %}
     - names:
 {%- if grains['os_family'] == 'Debian' %}
         - scality-sproxyd-apache2
@@ -13,6 +16,8 @@ sproxyd:
 {%- if grains['os_family'] == 'RedHat' %}
         - scality-sproxyd-httpd
 {%- endif %}
+    - require:
+      - pkgrepo: scality-repository
   service:
     - running
     - name: scality-sproxyd
@@ -26,7 +31,7 @@ sproxyd:
     - managed
     - name: /etc/sproxyd.conf
     - template: jinja
-    - source: {{pillar['sproxyd_conf_tmpl']|default('salt://scality/sproxyd/sproxyd.conf.tmpl')}}
+    - source: {{ salt['pillar.get']('scality:sproxyd_conf_tmpl', 'salt://scality/sproxyd/sproxyd.conf.tmpl') }}
     - require:
       - pkg: python-scalitycs
 

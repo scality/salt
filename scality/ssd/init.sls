@@ -1,10 +1,11 @@
+{%- set nb_ssds = salt['pillar.get']('scality:nb_ssds', 0) %}
 {%- if pillar['nb_ssds'] is defined and pillar['nb_ssds'] > 0 %}
 include:
   - scality.node
 
-{%- set ssds = range(1, pillar['nb_ssds']+1) %}
-{%- set hdds = range(1, pillar['nb_disks']+1) %}
-{%- set mount_prefix_ssd = pillar['mount_prefix_ssd'] %}
+{%- set ssds = range(1, nb_ssds+1) %}
+{%- set hdds = range(1, salt['pillar.get']('scality:nb_disks')+1) %}
+{%- set mount_prefix_ssd = salt['pillar.get']('scality:mount_prefix_ssd') %}
 {%- for n in hdds %}
 scality-ssd-{{n}}:
   cmd.run:

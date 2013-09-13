@@ -2,7 +2,12 @@
 srebuildd:
   pkg:
     - installed
+{%- if pillar['scality:version'] is defined %}
+    - version: {{ salt['pillar.get']('scality:version') }}
+{%- endif %}
     - name: scality-srebuildd-httpd
+    - require:
+      - pkgrepo: scality-repository
   service:
     - running
     - name: scality-srebuildd
