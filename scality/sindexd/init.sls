@@ -29,7 +29,7 @@ lighttpd:
 scality-sindexd:
   pkg:
     - installed
-{%- if pillar['scality:version'] is defined %}
+{%- if pillar['scality'] is defined and pillar['scality']['version'] is defined %}
     - version: {{ salt['pillar.get']('scality:version') }}
 {%- endif %}
     - names:
