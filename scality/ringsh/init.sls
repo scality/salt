@@ -1,3 +1,5 @@
+include:
+  - scality.repo
 
 scality-ringsh:
   pkg:
