@@ -49,11 +49,13 @@ apache2:
     - require:
       - pkg: scality-supervisor
 
+{% set rings = salt['pillar.get']('scality:rings', 'RING').split(',') %}
 
-{%- for ring in ('scality:data_ring', 'scality:metadata_ring') %}
-{{ salt['pillar.get'](ring, 'RING') }}:
+{%- for ring in rings %}
+{{ ring }}:
   scality_ring.present:
     - supervisor: {{ supervisor_ip }} 
     - require:
       - service: scality-supervisor
+      - pkg: scality-ringsh
 {% endfor %}

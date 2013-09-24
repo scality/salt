@@ -1,7 +1,7 @@
 #
 # sproxyd config file
 #
-{%- set data_ring = salt['pillar.get']('scality:data_ring', 'RING') -%}
+{% set data_ring = salt['pillar.get']('scality:rings', 'RING').split(',')[0] %}
 
 #number of worker threads per task pool
 #n_workers = 100

@@ -3,8 +3,7 @@ scality:
    version: 4.1.4.r36931-1 # keep commented to install the latest version
   login: your_login
   password: your_password
-  data_ring: DATA
-  metadata_ring: META
+  rings: DATA,META
   mount_prefix: /scality/disk
   nb_nodes: 6
   nb_disks: 10

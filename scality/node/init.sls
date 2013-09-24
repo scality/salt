@@ -9,7 +9,6 @@ include:
 {%- set mount_prefix = salt['pillar.get']('scality:mount_prefix', '/scality/disk') %}
 {%- set nb_disks = salt['pillar.get']('scality:nb_disks', '1') %}
 {%- set name_prefix = salt['pillar.get']('scality:name_prefix', grains['id'] + '-n') %}
-{%- set data_ring = salt['pillar.get']('scality:data_ring', 'RING') %}
 
 {%- set prod_ip = salt['network.ip_addrs'](interface=prod_iface)[0] %}
 
@@ -75,6 +74,10 @@ scality-node-config:
   cmd.run:
     - watch:
       - file: /tmp/node-conf.tmpl
+    - require:
+{%- for node in range(nb_nodes) %}
+      - scality_node: {{grains['id']}}-n{{loop.index}}
+{% endfor %}
     - name: /usr/local/bin/ringsh -f /tmp/node-conf.tmpl
     #- name: cat /tmp/node-conf.tmpl
 
@@ -103,6 +106,8 @@ register-{{grains['id']}}:
     - require:
       - service: scality-sagentd
       
+{% set data_ring = salt['pillar.get']('scality:rings', 'RING').split(',')[0] %}
+
 {%- for node in range(nb_nodes) %}
 {{grains['id']}}-n{{loop.index}}:
   scality_node.added:

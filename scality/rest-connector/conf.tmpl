@@ -1,4 +1,5 @@
-supervisor loadConf {{salt['pillar.get']('scality:metadata_ring', 'META')}}
+{% set data_ring = salt['pillar.get']('scality:rings', 'RING').split(',')[0] %}
+supervisor loadConf {{ data_ring }}
 use {{grains['id']}}-c1
 accessor configSet msgstore_protocol_restapi bwsdeferredpolicy -1
 accessor configSet msgstore_protocol_restapi bwsdeferredpolicy -1
