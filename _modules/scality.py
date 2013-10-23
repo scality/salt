@@ -33,17 +33,17 @@ def __virtual__():
 
 
 
-def bootstrap_list(ring, max_size=10):
+def bootstrap_list(supervisor, ring, max_size=10):
     '''
     Return a bootstrap list for nodes of the specified ring.
     This list is suitable for insertion in a chord driver (sfused.conf, sproxyd.conf).
 
     CLI Example::
 
-        salt '*' scality.bootstrap_list <ring>
-        salt '*' scality.bootstrap_list <ring> <max_size>
+        salt '*' scality.bootstrap_list <supervisor> <ring>
+        salt '*' scality.bootstrap_list <supervisor> <ring> <max_size>
     '''
-    s = supervisor()
+    s = get_supervisor(supervisor)
     if ring not in s.get_ring_list():
         msg = 'Ring {0} is not known by the supervisor'
         raise CommandExecutionError(msg.format(ring))

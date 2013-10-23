@@ -1,6 +1,7 @@
 #
 # sproxyd config file
 #
+{% set supervisor_ip = salt['pillar.get']('scality:supervisor_ip', '127.0.0.1') %}
 {% set data_ring = salt['pillar.get']('scality:rings', 'RING').split(',')[0] %}
 
 #number of worker threads per task pool
@@ -10,7 +11,7 @@
 #bind = 0.0.0.0
 
 #bind port
-port = 10001
+port = 10002
 
 #connections backlog
 #backlog = 10000
@@ -52,7 +53,7 @@ ring_driver = "arcdata"
 
 #bootstraplist (port 4244 by default)
 #eg. bstraplist = 1.2.3.4:4244,1.2.3.4:4245
-bstraplist = {{ salt['scality.bootstrap_list'](data_ring) }}
+bstraplist = {{ salt['scality.bootstrap_list'](supervisor_ip, data_ring) }}
 
 
 #

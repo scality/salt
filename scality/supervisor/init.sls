@@ -1,3 +1,6 @@
+
+{% from "scality/map.jinja" import apache with context %}
+
 include:
   - scality.req
   - scality.repo
@@ -44,11 +47,7 @@ scality-supervisor:
       - cmd: scality-supervisor
 {%- endif %}
 
-{%- if grains['os_family'] == 'RedHat' %}
-httpd:
-{%- else %}
-apache2:
-{%- endif %}
+{{ apache.name }}:
   service:
     - running
     - enable: True

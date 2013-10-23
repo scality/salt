@@ -35,20 +35,35 @@ Installs the scality-node package and its dependencies.
 
 Installs the scality-rest-connector package and its dependencies.
 
-``scality.sindexd``
+``scality.sindexd.apache``
 -------------------
 
-Installs the scality-sindexd package and its dependencies.
+Installs and configures sindexd behind an apache 2 frontend
 
-``scality.sproxyd``
+``scality.sindexd.lighttpd``
 -------------------
 
-Installs the scality-sproxyd package and its dependencies.
+Installs and configures sindexd behind a lighttpd frontend
 
-``scality.srebuildd``
----------------------
+``scality.sproxyd.apache``
+-------------------
 
-Installs the scality-srebuildd package and its dependencies.
+Installs and configures sproxyd behind an apache 2 frontend
+
+``scality.sproxyd.lighttpd``
+-------------------
+
+Installs and configures sproxyd behind a lighttpd frontend
+
+``scality.srebuildd.apache``
+-------------------
+
+Installs and configures srebuildd behind an apache 2 frontend
+
+``scality.srebuildd.lighttpd``
+-------------------
+
+Installs and configures srebuildd behind a lighttpd frontend
 
 ``scality.repo``
 ----------------
