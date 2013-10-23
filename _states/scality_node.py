@@ -4,6 +4,11 @@ Created on 17 juin 2013
 @author: Christophe Vedel <christophe.vedel@scality.com>
 '''
 
+import logging
+import time
+
+log = logging.getLogger(__name__)
+
 def registered(name,
                address,
                supervisor,
@@ -53,6 +58,19 @@ def registered(name,
     if __salt__['scality.add_server'](name, address, supervisor, port):  # @UndefinedVariable
         ret['comment'] = 'Server {0} ({1}:{2}) has been registered with {3}'.format(name, address, port, supervisor)
         ret['changes'][name] = 'Registered'
+	retry = 0
+	wait = 2
+	while retry < 3:
+	    time.sleep(wait)
+	    servers = __salt__['scality.list_servers'](supervisor)
+	    for server in servers:
+                if server['name'] == name and len(server['version']) > 0:
+		    ret['changes'][name] = 'Registered (connected)'
+	            log.info('Supervisor connected to %s, reported version is %s' % (name, server['version']))
+		    return ret
+	    retry = retry  + 1
+	    wait = wait * 2
+	    log.warning('%s not found or not connected in server list: %s, waiting %d seconds' % (name, repr(servers), wait))
     else:
         ret['comment'] = 'Failed to register server {0} ({1}:{2}) with {3}'.format(name, address, port, supervisor)
         ret['result'] = False

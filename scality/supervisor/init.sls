@@ -1,6 +1,7 @@
 include:
   - scality.req
   - scality.repo
+  - scality.python
 
 {% set supervisor_ip = salt['pillar.get']('scality:supervisor_ip', '127.0.0.1') %}
 
@@ -27,7 +28,7 @@ scality-supervisor:
 {%- endif %}
 {%- if grains['os_family'] == 'RedHat' %}
   cmd.run:
-    - name: echo "y" | /usr/local/bin/scality-supervisor-config 
+    - name: echo "y" | /usr/local/bin/scality-supervisor-config && sleep 5
     - template: jinja
     - unless: test -d /etc/scality-supervisor
     - require:
@@ -37,6 +38,11 @@ scality-supervisor:
     - running
     - watch:
       - pkg: scality-supervisor
+{%- if grains['os_family'] == 'RedHat' %}
+    - require:
+      - pkg: scality-supervisor
+      - cmd: scality-supervisor
+{%- endif %}
 
 {%- if grains['os_family'] == 'RedHat' %}
 httpd:
@@ -57,5 +63,5 @@ apache2:
     - supervisor: {{ supervisor_ip }} 
     - require:
       - service: scality-supervisor
-      - pkg: scality-ringsh
+      - pkg: python-scalitycs
 {% endfor %}

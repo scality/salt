@@ -39,6 +39,8 @@ scality-sagentd:
       - pkg: scality-sagentd
   service:
     - running
+    - require:
+      - pkg: scality-sagentd
     - watch:
       - pkg: scality-sagentd
       - file: /etc/sagentd.yaml

@@ -2,12 +2,15 @@ include:
   - scality.req
   - scality.repo
   - scality.sagentd
+  - scality.req.rsyslog
+  - scality.req.hosts
+  - scality.python
 
 {%- set supervisor_ip = salt['pillar.get']('scality:supervisor_ip', '127.0.0.1') %}
 {%- set prod_iface = salt['pillar.get']('scality:prod_iface', 'eth0') %}
-{%- set nb_nodes = salt['pillar.get']('scality:nb_nodes', '6') %}
+{%- set nb_nodes = salt['pillar.get']('scality:nb_nodes', 6) %}
 {%- set mount_prefix = salt['pillar.get']('scality:mount_prefix', '/scality/disk') %}
-{%- set nb_disks = salt['pillar.get']('scality:nb_disks', '1') %}
+{%- set nb_disks = salt['pillar.get']('scality:nb_disks', 1) %}
 {%- set name_prefix = salt['pillar.get']('scality:name_prefix', grains['id'] + '-n') %}
 
 {%- set prod_ip = salt['network.ip_addrs'](interface=prod_iface)[0] %}
@@ -56,14 +59,10 @@ scality-node:
   service:
     - running
     - enable: true
+    - sig: bizstorenode
     - watch:
       - file: /etc/sysconfig/scality-node
-# cannot specify running, hang because bizstorenode does not detach from its terminal
-#- running
-#- enable: true
-#- sig: bizstorenode
-#- watch:
-#  - pkg: scality-node
+      - pkg: scality-node
 
 scality-node-config:
   file:
@@ -104,6 +103,7 @@ register-{{grains['id']}}:
     - address: {{ prod_ip }}
     - supervisor: {{ supervisor_ip }}
     - require:
+      - pkg: python-scalitycs
       - service: scality-sagentd
       
 {% set data_ring = salt['pillar.get']('scality:rings', 'RING').split(',')[0] %}

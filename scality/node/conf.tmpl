@@ -1,15 +1,11 @@
-{%- for ring in ('data_ring', 'metadata_ring') %}
-supervisor loadConf {{pillar[ring]}}
+{% set ring = salt['pillar.get']('scality:rings', 'RING').split(',')[0] %}
+{%- set nb_nodes = salt['pillar.get']('scality:nb_nodes', '6') %}
+supervisor loadConf {{ ring }}
 {%- set prefix = grains['id'].split('.')[0] + "-n" -%}
 {%- set prefix = grains['id'] + "-n" -%}
-{%- if ring == 'data_ring' -%}
 {%- set chunkapimdpoolsize = 30000000 -%}
 {%- set offset = 1 -%}
-{%- else -%}
-{%- set chunkapimdpoolsize = 5000000 -%}
-{%- set offset = 7 -%}
-{%- endif -%}
-{%- for n in range(6) %}
+{%- for n in range(nb_nodes) %}
 use {{prefix}}{{n+offset}}
 node configSet msgstore_protocol_chord chordchecklocalnbchunks 300
 node configSet msgstore_protocol_chord chordctrlmaxparalleltasks 5
@@ -33,5 +29,4 @@ node configSet ov_core_system net.ipv4.conf.default.forwarding 0
 node configSet ov_protocol_dns mainresolver 62.149.128.4,62.149.132.4
 node configSet ov_protocol_netscript "connect timeout" 5
 node configSet ov_protocol_netscript "socket timeout" 30
-{%- endfor -%}
 {%- endfor -%}

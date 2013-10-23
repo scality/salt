@@ -1,7 +1,14 @@
 include:
   - scality.req
   - scality.repo
-  - scality.cs
+  - scality.python
+
+{% set http_frontend = salt['pillar.get']('scality:http_frontend', 'apache') %}
+
+{%- if grains['os_family'] == 'RedHat' %}
+mod_fastcgi:
+  pkg.installed
+{%- endif %}
 
 sproxyd:
   pkg:
@@ -10,11 +17,15 @@ sproxyd:
     - version: {{ salt['pillar.get']('scality:version') }}
 {%- endif %}
     - names:
+{%- if http_frontend == 'lighttpd' %}
+        - scality-sproxyd-lighttpd
+{%- else %}
 {%- if grains['os_family'] == 'Debian' %}
         - scality-sproxyd-apache2
 {%- endif %}
 {%- if grains['os_family'] == 'RedHat' %}
         - scality-sproxyd-httpd
+{%- endif %}
 {%- endif %}
     - require:
       - pkgrepo: scality-repository
@@ -31,7 +42,7 @@ sproxyd:
     - managed
     - name: /etc/sproxyd.conf
     - template: jinja
-    - source: {{ salt['pillar.get']('scality:sproxyd_conf_tmpl', 'salt://scality/sproxyd/sproxyd.conf.tmpl') }}
+    - source: salt://scality/sproxyd/sproxyd.conf.tmpl
     - require:
       - pkg: python-scalitycs
 
@@ -45,5 +56,7 @@ sproxyd:
   file:
     - managed
     - source : salt://scality/sproxyd/fastcgi.conf
+    - require:
+      - pkg: mod_fastcgi
 {%- endif %}
 

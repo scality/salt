@@ -12,7 +12,7 @@ import yaml
 
 has_scalitycs = False
 try:
-    from scalitycs import Supervisor
+    from scalitycs import get_supervisor, get_node
     has_scalitycs = True
 except ImportError:
     pass
@@ -43,7 +43,7 @@ def bootstrap_list(ring, max_size=10):
         salt '*' scality.bootstrap_list <ring>
         salt '*' scality.bootstrap_list <ring> <max_size>
     '''
-    s = Supervisor()
+    s = supervisor()
     if ring not in s.get_ring_list():
         msg = 'Ring {0} is not known by the supervisor'
         raise CommandExecutionError(msg.format(ring))
@@ -61,19 +61,19 @@ def bootstrap_list(ring, max_size=10):
 def ring_exists(name, supervisor):
     '''
     '''
-    s = Supervisor('https://{0}:2443'.format(supervisor))
+    s = get_supervisor(supervisor)
     return name in s.get_ring_list()
     
 def create_ring(name, supervisor):
     '''
     '''
-    s = Supervisor('https://{0}:2443'.format(supervisor))
+    s = get_supervisor(supervisor)
     return s.create_ring(name)
 
 def delete_ring(name, supervisor):
     '''
     '''
-    s = Supervisor('https://{0}:2443'.format(supervisor))
+    s = get_supervisor(supervisor)
     return s.delete_ring(name)
 
 def list_servers(supervisor, sfilter='.*'):
@@ -82,14 +82,14 @@ def list_servers(supervisor, sfilter='.*'):
     You can filter the result according to the optional argument 'regex'
     """
 
-    s = Supervisor('https://{0}:2443'.format(supervisor))
+    s = get_supervisor(supervisor)
     return s.list_servers(sfilter)
 
 def add_server(name, address, supervisor, port=7084, ssl=False):
     """    serverAdd <name> <address> <cmpport> [<nossl>]
      Register a new server to this supervisor
     """
-    s = Supervisor('https://{0}:2443'.format(supervisor))
+    s = get_supervisor(supervisor)
     try:
         return s.add_server(name, address, port, ssl)
     except Exception, e:
@@ -100,7 +100,7 @@ def remove_server(address, supervisor, port=7084):
     """    serverAdd <name> <address> <cmpport> [<nossl>]
      Register a new server to this supervisor
     """
-    s = Supervisor('https://{0}:2443'.format(supervisor))
+    s = get_supervisor(supervisor)
     try:
         return s.remove_server(address, port)
     except Exception, e:
@@ -108,7 +108,7 @@ def remove_server(address, supervisor, port=7084):
         return False
 
 def get_node_ring(name, supervisor):
-    s = Supervisor('https://{0}:2443'.format(supervisor))
+    s = get_supervisor(supervisor)
     sagentd = yaml.load(open('/etc/sagentd.yaml', 'r'))
     for ring in s.get_ring_list():
         r = s.get_ring(ring)
@@ -118,7 +118,7 @@ def get_node_ring(name, supervisor):
     return None
 
 def ring_has_node(name, ring, supervisor):
-    s = Supervisor('https://{0}:2443'.format(supervisor))
+    s = get_supervisor(supervisor)
     r = s.get_ring(ring)
     sagentd = yaml.load(open('/etc/sagentd.yaml', 'r'))
     for n, value in sagentd['daemons'].iteritems():
@@ -127,7 +127,7 @@ def ring_has_node(name, ring, supervisor):
     return False
     
 def add_node(name, ring, supervisor):
-    s = Supervisor('https://{0}:2443'.format(supervisor))
+    s = get_supervisor(supervisor)
     sagentd = yaml.load(open('/etc/sagentd.yaml', 'r'))
     for n, value in sagentd['daemons'].iteritems():
         if name == n:
@@ -136,7 +136,7 @@ def add_node(name, ring, supervisor):
     return False
 
 def remove_node(name, ring, supervisor):
-    s = Supervisor('https://{0}:2443'.format(supervisor))
+    s = get_supervisor(supervisor)
     sagentd = yaml.load(open('/etc/sagentd.yaml', 'r'))
     for n, value in sagentd['daemons'].iteritems():
         if name == n:
@@ -144,4 +144,15 @@ def remove_node(name, ring, supervisor):
             return True
     return False
 
+def get_node_config(address, number, module=None):
+    n = get_node(address, number)
+    all = n.configViewModule()
+    if module:
+        return all.get(module, {})
+    else:
+        return all
+
+def set_node_config(address, number, module, values):
+    n = get_node(address, number)
+    n.configUpdateModule(module, values)
 
