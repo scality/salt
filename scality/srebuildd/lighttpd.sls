@@ -1,6 +1,6 @@
 
 include:
-    - scality.sproxyd
+    - scality.srebuildd
     - scality.sd.lighttpd
 
 extend:
