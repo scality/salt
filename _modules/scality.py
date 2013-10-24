@@ -144,13 +144,70 @@ def remove_node(name, ring, supervisor):
             return True
     return False
 
+def get_rest_connector_ring(name, supervisor):
+    s = get_supervisor(supervisor)
+    sagentd = yaml.load(open('/etc/sagentd.yaml', 'r'))
+    for ring in s.get_ring_list():
+        r = s.get_ring(ring)
+        for n, value in sagentd['daemons'].iteritems():
+            if name == n and r.has_rest_connector(value['address'], value['port']):
+                return ring
+    return None
+
+def ring_has_rest_connector(name, ring, supervisor):
+    s = get_supervisor(supervisor)
+    r = s.get_ring(ring)
+    sagentd = yaml.load(open('/etc/sagentd.yaml', 'r'))
+    for n, value in sagentd['daemons'].iteritems():
+        if name == n:
+            return r.has_rest_connector(value['address'], value['port'])
+    return False
+
+def add_rest_connector(name, ring, supervisor):
+    s = get_supervisor(supervisor)
+    sagentd = yaml.load(open('/etc/sagentd.yaml', 'r'))
+    for n, value in sagentd['daemons'].iteritems():
+        if name == n:
+            s.add_rest_connector_to_ring(value['address'], value['port'], ring)
+            return True
+    return False
+
+def remove_rest_connector(name, ring, supervisor):
+    s = get_supervisor(supervisor)
+    sagentd = yaml.load(open('/etc/sagentd.yaml', 'r'))
+    for n, value in sagentd['daemons'].iteritems():
+        if name == n:
+            s.remove_rest_connector_from_ring(value['address'], value['port'], ring)
+            return True
+    return False
+
+def get_config_by_name(name, ring, supervisor, module=None):
+    s = get_supervisor(supervisor)
+    r = s.get_ring(ring)
+    o = r.by_name(name)
+    if not o:
+        raise ValueError('Could not find {0} in ring {1}'.format(name, ring))
+    all_modules = o.configViewModule()
+    if module:
+        return all_modules.get(module, {})
+    else:
+        return all_modules
+
+def set_config_by_name(name, ring, supervisor, module, values):
+    s = get_supervisor(supervisor)
+    r = s.get_ring(ring)
+    o = r.by_name(name)
+    if not o:
+        raise ValueError('Could not find {0} in ring {1}'.format(name, ring))
+    o.configUpdateModule(module, values)
+
 def get_node_config(address, number, module=None):
     n = get_node(address, number)
-    all = n.configViewModule()
+    all_modules = n.configViewModule()
     if module:
-        return all.get(module, {})
+        return all_modules.get(module, {})
     else:
-        return all
+        return all_modules
 
 def set_node_config(address, number, module, values):
     n = get_node(address, number)

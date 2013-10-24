@@ -16,6 +16,7 @@ include:
 {%- set prod_ip = salt['network.ip_addrs'](interface=prod_iface)[0] %}
 
 {%- if grains['os_family'] == 'Debian' %}
+# scality-node-config options, Debian style
 scality-node-debconf:
   debconf.set:
     - name: scality-node
@@ -48,6 +49,7 @@ scality-node:
       - debconf: scality-node-debconf
 {%- endif %}
 {%- if grains['os_family'] == 'RedHat' %}
+# scality-node-config options, RedHat style
   cmd.run:
     - name: /usr/local/bin/scality-node-config -p {{ mount_prefix }} -d {{ nb_disks }} -n {{ nb_nodes }} -m {{ name_prefix }} -i {{ prod_ip }}
     - template: jinja
@@ -63,22 +65,6 @@ scality-node:
     - watch:
       - file: /etc/sysconfig/scality-node
       - pkg: scality-node
-
-scality-node-config:
-  file:
-    - managed
-    - template: jinja
-    - name: /tmp/node-conf.tmpl
-    - source: salt://scality/node/conf.tmpl
-  cmd.run:
-    - watch:
-      - file: /tmp/node-conf.tmpl
-    - require:
-{%- for node in range(nb_nodes) %}
-      - scality_node: {{grains['id']}}-n{{loop.index}}
-{% endfor %}
-    - name: /usr/local/bin/ringsh -f /tmp/node-conf.tmpl
-    #- name: cat /tmp/node-conf.tmpl
 
 /etc/sysconfig/scality-node:
     file:
@@ -96,25 +82,56 @@ extend:
       - watch:
         - file: /etc/rsyslog.d/scality-nodes.conf
 
-register-{{grains['id']}}:
-  scality_node:
-    - registered
-    - name: {{ grains['id'] }}
-    - address: {{ prod_ip }}
-    - supervisor: {{ supervisor_ip }}
-    - require:
-      - pkg: python-scalitycs
-      - service: scality-sagentd
-      
 {% set data_ring = salt['pillar.get']('scality:rings', 'RING').split(',')[0] %}
 
 {%- for node in range(nb_nodes) %}
-{{grains['id']}}-n{{loop.index}}:
+
+# add the node to its ring
+add-{{ name_prefix }}{{ loop.index }}:
   scality_node.added:
+    - name: {{ name_prefix }}{{ loop.index }}
     - ring: {{ data_ring }} 
     - supervisor: {{ supervisor_ip }} 
     - require:
-      - scality_node: register-{{grains['id']}}
+      - scality_server: register-{{grains['id']}}
+
+# set a few configuration values where the default is lacking
+config-{{ name_prefix }}{{ loop.index }}:
+  scality_node.configured:
+    - name: {{ name_prefix }}{{ loop.index }}
+    - ring: {{ data_ring }}
+    - supervisor: {{ supervisor_ip }}
+    - values:
+        msgstore_protocol_chord:
+          chordchecklocalnbchunks: 300
+          chordctrlmaxparalleltasks: 5
+          chordhttpsockettimeout: 30
+          chordctrlrebuildrestbasepath: /rebuild/arcdata
+        msgstore_storage_asyncpersistentmemory:
+          pmmaxbiziostoreioidle: 8
+          pmminbiziostoreblockdelayS: 30
+          pmminbiziostoreblockdelaytimeoutS: 60
+          pmminlibbizioreconnectdelaytimeoutS: 10
+        msgstore_storage_chunkapi:
+          chunkapimaxdelete: 32
+          chunkapimaxphysdelete: 10
+          chunkapimaxread: 96
+          chunkapimaxwrite: 64
+          chunkapimdpoolsize: 30000000
+          chunkapinoatime: 1
+        ov_cluster_node:
+          usessl: 0
+        ov_core_logs:
+          logsoccurrences: 48
+          logsmaxsize: 2000
+        ov_protocol_dns:
+          mainresolver: 62.149.128.4,62.149.132.4
+        ov_protocol_netscript:
+          connect timeout: 5
+          socket timeout: 30
+    - require:
+      - scality_node: add-{{ name_prefix }}{{ loop.index }}
+
 {% endfor %}
 
 

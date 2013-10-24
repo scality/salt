@@ -9,7 +9,7 @@ python-scalitycs:
       - file: scality-ringsh
 {%- if grains['os_family'] == 'RedHat' %}
     - sources:
-      - python-scalitycs: salt://scality/python/python-scalitycs-1.0.1.dev1-1.el6.noarch.rpm
+      - python-scalitycs: salt://scality/python/python-scalitycs-1.0.1.dev2-1.el6.noarch.rpm
 {%- endif %}
   module.run:
     - name: saltutil.refresh_modules

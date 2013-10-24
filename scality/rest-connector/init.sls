@@ -52,20 +52,54 @@ scality-rest-connector:
 #    - watch:
 #      - pkg: scality-rest-connector
 
-scality-rest-connector-config:
-  file:
-    - managed
-    - template: jinja
-    - name: /tmp/rest-connector-conf.tmpl
-    - source: salt://scality/rest-connector/conf.tmpl
-  cmd.run:
+{% set data_ring = salt['pillar.get']('scality:rings', 'RING').split(',')[0] %}
+
+add-rest-connector:
+  scality_rest_connector.added:
+    - name: {{ name_prefix }}1
+    - ring: {{ data_ring }}
+    - supervisor: {{ supervisor_ip }}
     - require:
-      - pkg: scality-ringsh
-      - file: scality-ringsh
-    - watch:
-      - file: /tmp/rest-connector-conf.tmpl
-    - name: /usr/local/bin/ringsh -f /tmp/rest-connector-conf.tmpl
-    #- name: cat /tmp/rest-connector-conf.tmpl
+      - scality_server: register-{{grains['id']}}
+
+config-rest-connector:
+  scality_rest_connector.configured:
+    - name: {{ name_prefix }}1
+    - ring: {{ data_ring }}
+    - supervisor: {{ supervisor_ip }}
+    - values:
+        msgstore_protocol_restapi:
+          bwsdeferredpolicy: -1
+          bwsdrvdata: arc
+          chordsplitsizetrigger: 4000000
+          chordsplitsizeblock: 2000000
+          bwssplitsizetrigger: 4000000
+          bwssplitsizeblock: 2000000
+        msgstore_storage_chordbucket:
+          bwsdbmesamaincos: 4
+          bwsdbmesacos: 2
+          bwsdbmesahost: 127.0.0.1:81
+          bwsdbmesauri: /sindexd.fcgi
+        ov_core_logs:
+          logsoccurrences: 48
+          logsmaxsize: 2000
+        ov_protocol_dns:
+          mainresolver: 127.0.0.1
+        ov_protocol_netscript:
+          connect timeout: 5
+          socket timeout: 30
+
+#{%- if pillar['nodes'] is defined %}
+#accessor configSet msgstore_protocol_restapi bwsdrvdataopts "sproxyd_srv=
+#{%- for node in salt['pillar.get']('nodes', '') -%}
+#{{node}}:81
+#{%- if not loop.last -%}
+#,
+#{%- endif -%}
+#{%- endfor -%}
+#;sproxyd_uri_arc=/proxy/arc;sproxyd_uri_chord=/proxy/chord"
+#{%- endif %}
+
 
 /etc/rsyslog.d/scality-conn.conf:
   file:

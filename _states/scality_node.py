@@ -5,78 +5,9 @@ Created on 17 juin 2013
 '''
 
 import logging
-import time
 
 log = logging.getLogger(__name__)
 
-def registered(name,
-               address,
-               supervisor,
-               port=7084):
-    '''
-    Ensure that a server is registered with its supervisor
-    
-    name
-        the name of the server to register
-        
-    address
-        the IP address of the server to register
-        
-    supervisor
-        the IP address or host name of the supervisor to register with
-            
-    port
-        the port to use to register the server (7084 is sagentd)
-        
-    '''
-    ret = {'name': name,
-           'changes': {},
-           'result': True,
-           'comment': 'Server {0} ({1}:{2}) is already registered with {3}'.format(name, address, port, supervisor)}
-    servers = __salt__['scality.list_servers'](supervisor)  # @UndefinedVariable
-    matched = None
-    for s in servers:
-        match_name = s['name'] == name
-        match_id = s['hostname'] == '{0}:{1}'.format(address, port)
-        if match_name and match_id:
-            return ret
-        if match_name or match_id:
-            matched = s
-    
-    if __opts__['test']:  # @UndefinedVariable
-        msg = 'Server {0} ({1}:{2}) must be registered with {3}'.format(name, address, port, supervisor)
-        if matched:
-            msg += ' ({0} ({1}:{2}) must be unregistered first)'.format(matched['name'], matched['ip'], matched['port'])
-        ret['result'] = None
-        ret['comment'] = msg
-        return ret
-    
-    if matched:
-        # remove the already registered server
-        __salt__['scality.remove_server'](address, supervisor, port)  # @UndefinedVariable
-        
-    if __salt__['scality.add_server'](name, address, supervisor, port):  # @UndefinedVariable
-        ret['comment'] = 'Server {0} ({1}:{2}) has been registered with {3}'.format(name, address, port, supervisor)
-        ret['changes'][name] = 'Registered'
-	retry = 0
-	wait = 2
-	while retry < 3:
-	    time.sleep(wait)
-	    servers = __salt__['scality.list_servers'](supervisor)
-	    for server in servers:
-                if server['name'] == name and len(server['version']) > 0:
-		    ret['changes'][name] = 'Registered (connected)'
-	            log.info('Supervisor connected to %s, reported version is %s' % (name, server['version']))
-		    return ret
-	    retry = retry  + 1
-	    wait = wait * 2
-	    log.warning('%s not found or not connected in server list: %s, waiting %d seconds' % (name, repr(servers), wait))
-    else:
-        ret['comment'] = 'Failed to register server {0} ({1}:{2}) with {3}'.format(name, address, port, supervisor)
-        ret['result'] = False
-        
-    return ret
-    
 def added(name,
           ring,
           supervisor):   
@@ -96,14 +27,14 @@ def added(name,
     ret = {'name': name,
            'changes': {},
            'result': True,
-           'comment': 'Node {0} already belongs to ring {1}'.format(name, ring)}
+           'comment': 'Node belongs to ring {0}'.format(ring)}
     
     current_ring = __salt__['scality.get_node_ring'](name, supervisor)  # @UndefinedVariable
     if ring == current_ring:  # @UndefinedVariable
         return ret
     
     if __opts__['test']:  # @UndefinedVariable
-        msg = 'Node {0} must be added to ring {1}'.format(name, ring)
+        msg = 'Node must be added to ring {0}'.format(ring)
         if current_ring:
             msg += ' (must be removed from ring {0} first)'.format(current_ring)
         ret['result'] = None
@@ -112,19 +43,56 @@ def added(name,
     
     if current_ring:
         if not __salt__['scality.remove_node'](name, current_ring, supervisor):  # @UndefinedVariable
-            ret['comment'] = 'Failed to remove node {0} from ring {1}'.format(name, current_ring)
+            ret['comment'] = 'Failed to remove node from ring {0}'.format(current_ring)
             ret['result'] = False
             return ret
 
     if __salt__['scality.add_node'](name, ring, supervisor):  # @UndefinedVariable
         if current_ring:
-            ret['comment'] = 'Node {0} has been moved from ring {2} to ring {1}'.format(name, ring, current_ring)
+            ret['comment'] = 'Node has been moved from ring {1} to ring {0}'.format(ring, current_ring)
             ret['changes'][name] = 'Moved'
         else:
-            ret['comment'] = 'Node {0} has been added to ring {1}'.format(name, ring)
+            ret['comment'] = 'Node has been added to ring {0}'.format(ring)
             ret['changes'][name] = 'Added'
     else:
-        ret['comment'] = 'Failed to add node {0} to ring {1}'.format(name, ring)
+        ret['comment'] = 'Failed to add node to ring {0}'.format(ring)
         ret['result'] = False
 
+    return ret
+
+def configured(name,
+               ring,
+               supervisor,
+               values):
+    ret = {'name': name,
+           'changes': {},
+           'result': True,
+           'comment': 'Node configuration OK'.format(name)}
+    current = __salt__['scality.get_config_by_name'](name, ring, supervisor)  # @UndefinedVariable
+    # check specified modules and bail out early if one is unknown
+    for (module, set_values) in values.iteritems():
+        if not current.has_key(module):
+            ret['result'] = False
+            ret['comment'] = 'Configuration module {0} is unknown'.format(module)
+            return ret
+    # check specified values and bail out early if one is unknown
+    for (module, set_values) in values.iteritems():
+        cur_values = current[module]
+        for key in set_values.iterkeys():
+            if not cur_values.has_key(key):
+                ret['result'] = False
+                ret['comment'] = 'Configuration value {0}.{1} is unknown'.format(module, key)
+                return ret
+    for (module, set_values) in values.iteritems():
+        cur_values = current[module]
+        diff = {}
+        for (key, set_value) in set_values.iteritems():
+            cur_value = cur_values.get(key, {'value': ''})['value']
+            if cur_value != str(set_value):
+                diff[key] = (cur_value, str(set_value))
+        if len(diff) is 0: continue
+        ret['changes'][module] = ', '.join(['%s: %s -> %s' % (key, v[0], v[1]) for key, v in diff.iteritems()])
+        diff = dict((key, v[1]) for key, v in diff.iteritems())
+        __salt__['scality.set_config_by_name'](name, ring, supervisor, module, diff)  # @UndefinedVariable
+        ret['comment'] = 'Node configuration changed'
     return ret
