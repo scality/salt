@@ -191,6 +191,27 @@ def remove_rest_connector(name, ring, supervisor):
             return True
     return False
 
+def get_ring_config(ring, supervisor):
+    s = get_supervisor(supervisor)
+    status = s.supervisorConfigDso(action="view", dsoname=ring)
+    return dict(status["params"])
+
+def set_ring_config(ring, supervisor, values):
+    s = get_supervisor(supervisor)
+    s.supervisorConfigDso(action="params", dsoname=ring, extra_params=values, doparse=False)
+
+def get_supervisor_config(supervisor, module=None):
+    s = get_supervisor(supervisor)
+    all_modules = s.configViewModule()
+    if module:
+        return all_modules.get(module, {})
+    else:
+        return all_modules
+
+def set_supervisor_config(supervisor, module, values):
+    s = get_supervisor(supervisor)
+    s.configUpdateModule(module, values)
+
 def get_config_by_name(name, ring, supervisor, module=None):
     s = get_supervisor(supervisor)
     r = s.get_ring(ring)

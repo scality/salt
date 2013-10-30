@@ -28,10 +28,10 @@ def added(name,
            'result': True,
            'comment': 'RS2 connector belongs to ring {0}'.format(ring)}
     
-    if not __salt__['scality.ringsh_at_least']('4.2'):
+    if not __salt__['scality.ringsh_at_least']('4.2'):  # @UndefinedVariable
         ret['comment'] = 'Adding a rest connector to a ring is not supported by your version of ringsh/pyscality'
         ret['result'] = False
-	return ret
+    return ret
 
     current_ring = __salt__['scality.get_rest_connector_ring'](name, supervisor)  # @UndefinedVariable
     if ring == current_ring:  # @UndefinedVariable
@@ -64,5 +64,13 @@ def added(name,
 
     return ret
 
-configured = scality_node.configured
+from scality_node import _generate_config_getter, _generate_config_setter, _configured
+
+def configured(name,
+               ring,
+               supervisor,
+               values):
+    getter = _generate_config_getter(name, ring)
+    setter = _generate_config_setter(name, ring)
+    return _configured(getter, setter, 'RS2 connector', name, supervisor, values)
 

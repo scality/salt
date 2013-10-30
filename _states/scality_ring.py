@@ -29,7 +29,7 @@ def present(name,
                 ).format(name, supervisor)
         return ret
 
-    if __salt__['scality.ringsh_at_least']('4.2'):
+    if __salt__['scality.ringsh_at_least']('4.2'):  # @UndefinedVariable
         if __salt__['scality.create_ring'](name, supervisor):  # @UndefinedVariable
             ret['comment'] = 'Ring {0} has been created at {1}'.format(name, supervisor)
             ret['changes'][name] = 'Present'
@@ -42,4 +42,29 @@ def present(name,
 
     return ret
 
+def configured(ring,
+               supervisor,
+               values):
+    ret = {'name': ring,
+           'changes': {},
+           'result': True,
+           'comment': 'Ring configuration OK'}
+
+    current = __salt__['scality.get_ring_config'](ring, supervisor)  # @UndefinedVariable
+    # check specified values and bail out early if one is unknown
+    changes = {}
+    for (key, value) in values.iteritems():
+        try:
+            if current[key] != str(value):
+                ret['changes'][key] = '{0} -> {1}'.format(current[key], value)
+                changes[key] = value
+        except KeyError:
+            ret['changes'] = {}
+            ret['result'] = False
+            ret['comment'] = 'Ring configuration value {0} is unknown'.format(key)
+            return ret
+    if len(changes) > 0:
+        __salt__['scality.set_ring_config'](ring, supervisor, changes)  # @UndefinedVariable
+        ret['comment'] = 'Ring configuration changed'
+    return ret
     

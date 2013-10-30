@@ -54,6 +54,16 @@ scality-supervisor:
     - require:
       - pkg: scality-supervisor
 
+scality-supervisor-config:
+  scality_supervisor.configured:
+    - supervisor: {{ supervisor_ip }}
+    - values:
+        ov_core_logs:
+          logsoccurrences: 48
+          logsmaxsize: 2000
+    - require:
+      - service: scality-supervisor
+
 {% set rings = salt['pillar.get']('scality:rings', 'RING').split(',') %}
 
 {%- for ring in rings %}

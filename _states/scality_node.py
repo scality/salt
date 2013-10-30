@@ -29,11 +29,6 @@ def added(name,
            'result': True,
            'comment': 'Node belongs to ring {0}'.format(ring)}
     
-    if not __salt__['scality.ringsh_at_least']('4.2'):
-        ret['comment'] = 'Adding a node to a ring is not supported by your version of ringsh/pyscality'
-        ret['result'] = False
-	return ret
-
     current_ring = __salt__['scality.get_node_ring'](name, supervisor)  # @UndefinedVariable
     if ring == current_ring:  # @UndefinedVariable
         return ret
@@ -46,6 +41,11 @@ def added(name,
         ret['comment'] = msg
         return ret
     
+    if not __salt__['scality.ringsh_at_least']('4.2'):  # @UndefinedVariable
+        ret['comment'] = 'Adding a node to a ring is not supported by your version of ringsh/pyscality'
+        ret['result'] = False
+    return ret
+
     if current_ring:
         if not __salt__['scality.remove_node'](name, current_ring, supervisor):  # @UndefinedVariable
             ret['comment'] = 'Failed to remove node from ring {0}'.format(current_ring)
@@ -65,26 +65,33 @@ def added(name,
 
     return ret
 
-def configured(name,
-               ring,
+def _generate_config_getter(name, ring):
+    def get_config(supervisor):
+        return __salt__['scality.get_config_by_name'](name, ring, supervisor)  # @UndefinedVariable
+    return get_config
+
+def _generate_config_setter(name, ring):
+    def set_config(supervisor, module, values):
+        return __salt__['scality.set_config_by_name'](name, ring, supervisor, module, values)  # @UndefinedVariable
+    return set_config
+
+def _configured(getter,
+               setter,
+               otype,
+               name,
                supervisor,
                values):
     ret = {'name': name,
            'changes': {},
            'result': True,
-           'comment': 'Node configuration OK'.format(name)}
+           'comment': '{0} configuration OK'.format(otype)}
 
-    if not __salt__['scality.ringsh_at_least']('4.2'):
-        ret['comment'] = 'Configuring a node or connector is not supported by your version of ringsh/pyscality'
-        ret['result'] = False
-	return ret
-
-    current = __salt__['scality.get_config_by_name'](name, ring, supervisor)  # @UndefinedVariable
+    current = getter(supervisor)  # @UndefinedVariable
     # check specified modules and bail out early if one is unknown
     for (module, set_values) in values.iteritems():
         if not current.has_key(module):
             ret['result'] = False
-            ret['comment'] = 'Configuration module {0} is unknown'.format(module)
+            ret['comment'] = '{0} configuration module {1} is unknown'.format(otype, module)
             return ret
     # check specified values and bail out early if one is unknown
     for (module, set_values) in values.iteritems():
@@ -92,7 +99,7 @@ def configured(name,
         for key in set_values.iterkeys():
             if not cur_values.has_key(key):
                 ret['result'] = False
-                ret['comment'] = 'Configuration value {0}.{1} is unknown'.format(module, key)
+                ret['comment'] = '{0} configuration value {1}.{2} is unknown'.format(otype, module, key)
                 return ret
     for (module, set_values) in values.iteritems():
         cur_values = current[module]
@@ -104,6 +111,14 @@ def configured(name,
         if len(diff) is 0: continue
         ret['changes'][module] = ', '.join(['%s: %s -> %s' % (key, v[0], v[1]) for key, v in diff.iteritems()])
         diff = dict((key, v[1]) for key, v in diff.iteritems())
-        __salt__['scality.set_config_by_name'](name, ring, supervisor, module, diff)  # @UndefinedVariable
-        ret['comment'] = 'Node configuration changed'
+        setter(supervisor, module, diff)  # @UndefinedVariable
+        ret['comment'] = '{0} configuration changed'.format(otype)
     return ret
+
+def configured(name,
+               ring,
+               supervisor,
+               values):
+    getter = _generate_config_getter(name, ring)
+    setter = _generate_config_setter(name, ring)
+    return _configured(getter, setter, 'Node', name, supervisor, values)

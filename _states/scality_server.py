@@ -34,10 +34,10 @@ def registered(name,
            'result': True,
            'comment': 'Server {0} ({1}:{2}) is already registered with {3}'.format(name, address, port, supervisor)}
 
-    if not __salt__['scality.ringsh_at_least']('4.2'):
+    if not __salt__['scality.ringsh_at_least']('4.2'):  # @UndefinedVariable
         ret['comment'] = 'Server registration is not supported by your version of ringsh/pyscality'
         ret['result'] = False
-	return ret
+    return ret
 
     servers = __salt__['scality.list_servers'](supervisor)  # @UndefinedVariable
     matched = None
