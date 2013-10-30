@@ -9,12 +9,21 @@ from salt.exceptions import CommandExecutionError
 import logging
 logger = logging.getLogger(__name__)
 import yaml
+from distutils.version import LooseVersion
 
 has_scalitycs = False
 try:
     from scalitycs import get_supervisor, get_node
     has_scalitycs = True
 except ImportError:
+    pass
+
+ringsh_version = LooseVersion('0.0')
+try:
+    import imp
+    r = imp.load_source('r', '/usr/local/scality-ringsh/ringsh/r.py')
+    ringsh_version = LooseVersion(r.RING_SVN_VERSION)
+except:
     pass
 
 #__outputter__ = {
@@ -31,7 +40,8 @@ def __virtual__():
     '''
     return 'scality' if has_scalitycs else False
 
-
+def ringsh_at_least(version):
+    return ringsh_version >= LooseVersion(version)
 
 def bootstrap_list(supervisor, ring, max_size=10):
     '''

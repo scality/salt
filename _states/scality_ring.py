@@ -28,12 +28,16 @@ def present(name,
         ret['comment'] = ('Ring {0} does not exists at {1} and needs to be created'
                 ).format(name, supervisor)
         return ret
-    
-    if __salt__['scality.create_ring'](name, supervisor):  # @UndefinedVariable
-        ret['comment'] = 'Ring {0} has been created at {1}'.format(name, supervisor)
-        ret['changes'][name] = 'Present'
+
+    if __salt__['scality.ringsh_at_least']('4.2'):
+        if __salt__['scality.create_ring'](name, supervisor):  # @UndefinedVariable
+            ret['comment'] = 'Ring {0} has been created at {1}'.format(name, supervisor)
+            ret['changes'][name] = 'Present'
+        else:
+            ret['comment'] = 'Failed to create ring {0} at {1}'.format(name, supervisor)
+            ret['result'] = False
     else:
-        ret['comment'] = 'Failed to create ring {0} at {1}'.format(name, supervisor)
+        ret['comment'] = 'The method to create a ring is not supported by your version of ringsh/pyscality'
         ret['result'] = False
 
     return ret

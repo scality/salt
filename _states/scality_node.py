@@ -29,6 +29,11 @@ def added(name,
            'result': True,
            'comment': 'Node belongs to ring {0}'.format(ring)}
     
+    if not __salt__['scality.ringsh_at_least']('4.2'):
+        ret['comment'] = 'Adding a node to a ring is not supported by your version of ringsh/pyscality'
+        ret['result'] = False
+	return ret
+
     current_ring = __salt__['scality.get_node_ring'](name, supervisor)  # @UndefinedVariable
     if ring == current_ring:  # @UndefinedVariable
         return ret
@@ -68,6 +73,12 @@ def configured(name,
            'changes': {},
            'result': True,
            'comment': 'Node configuration OK'.format(name)}
+
+    if not __salt__['scality.ringsh_at_least']('4.2'):
+        ret['comment'] = 'Configuring a node or connector is not supported by your version of ringsh/pyscality'
+        ret['result'] = False
+	return ret
+
     current = __salt__['scality.get_config_by_name'](name, ring, supervisor)  # @UndefinedVariable
     # check specified modules and bail out early if one is unknown
     for (module, set_values) in values.iteritems():
