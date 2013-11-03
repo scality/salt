@@ -10,6 +10,7 @@ import logging
 logger = logging.getLogger(__name__)
 import yaml
 from distutils.version import LooseVersion
+import time
 
 has_scalitycs = False
 try:
@@ -25,6 +26,9 @@ try:
     ringsh_version = LooseVersion(r.RING_SVN_VERSION)
 except:
     pass
+
+INITIAL_DELAY = 2
+MAX_RETRY = 4
 
 #__outputter__ = {
 #  'compactionstats': 'txt',
@@ -95,13 +99,28 @@ def list_servers(supervisor, sfilter='.*'):
     s = get_supervisor(supervisor)
     return s.list_servers(sfilter)
 
-def add_server(name, address, supervisor, port=7084, ssl=False):
+def add_server(name, address, supervisor, port=7084, ssl=False, wait=True):
     """    serverAdd <name> <address> <cmpport> [<nossl>]
      Register a new server to this supervisor
     """
     s = get_supervisor(supervisor)
     try:
-        return s.add_server(name, address, port, ssl)
+        if s.add_server(name, address, port, ssl):
+            if wait:
+                delay = INITIAL_DELAY
+                retry = 0
+                while retry < MAX_RETRY:
+                    time.sleep(delay)
+                    for x in s.list_servers(name):
+                        if x['name'] == name:
+                            return x['version']
+                    retry += 1
+                    delay *= 2
+                else:
+                    return False
+            return True
+        else:
+            return False
     except Exception, e:
         logger.error(str(e))
         return False
@@ -136,21 +155,43 @@ def ring_has_node(name, ring, supervisor):
             return r.has_node(value['address'], value['port'])
     return False
     
-def add_node(name, ring, supervisor):
+def add_node(name, ring, supervisor, wait=True):
     s = get_supervisor(supervisor)
     sagentd = yaml.load(open('/etc/sagentd.yaml', 'r'))
     for n, value in sagentd['daemons'].iteritems():
         if name == n:
             s.add_node_to_ring(value['address'], value['port'], ring)
+            if wait:
+                r = s.get_ring(ring)
+                delay = INITIAL_DELAY
+                retry = 0
+                while retry < MAX_RETRY:
+                    time.sleep(delay)
+                    if r.has_node(value['address'], value['port']): 
+                        return True
+                    retry += 1
+                    delay *= 2
+                else: return False
             return True
     return False
 
-def remove_node(name, ring, supervisor):
+def remove_node(name, ring, supervisor, wait=True):
     s = get_supervisor(supervisor)
     sagentd = yaml.load(open('/etc/sagentd.yaml', 'r'))
     for n, value in sagentd['daemons'].iteritems():
         if name == n:
             s.remove_node_from_ring(value['address'], value['port'], ring)
+            if wait:
+                r = s.get_ring(ring)
+                delay = INITIAL_DELAY
+                retry = 0
+                while retry < MAX_RETRY:
+                    time.sleep(delay)
+                    if not r.has_node(value['address'], value['port']): 
+                        return True
+                    retry += 1
+                    delay *= 2
+                else: return False
             return True
     return False
 
@@ -173,21 +214,43 @@ def ring_has_rest_connector(name, ring, supervisor):
             return r.has_rest_connector(value['address'], value['port'])
     return False
 
-def add_rest_connector(name, ring, supervisor):
+def add_rest_connector(name, ring, supervisor, wait=True):
     s = get_supervisor(supervisor)
     sagentd = yaml.load(open('/etc/sagentd.yaml', 'r'))
     for n, value in sagentd['daemons'].iteritems():
         if name == n:
-            s.add_rest_connector_to_ring(value['address'], value['port'], ring)
+            s.add_rest_connector_to_ring(value['address'], str(value['port']), ring)
+            if wait:
+                r = s.get_ring(ring)
+                delay = INITIAL_DELAY
+                retry = 0
+                while retry < MAX_RETRY:
+                    time.sleep(delay)
+                    if r.has_rest_connector(value['address'], value['port']): 
+                        return True
+                    retry += 1
+                    delay *= 2
+                else: return False
             return True
     return False
 
-def remove_rest_connector(name, ring, supervisor):
+def remove_rest_connector(name, ring, supervisor, wait=True):
     s = get_supervisor(supervisor)
     sagentd = yaml.load(open('/etc/sagentd.yaml', 'r'))
     for n, value in sagentd['daemons'].iteritems():
         if name == n:
             s.remove_rest_connector_from_ring(value['address'], value['port'], ring)
+            if wait:
+                r = s.get_ring(ring)
+                delay = INITIAL_DELAY
+                retry = 0
+                while retry < MAX_RETRY:
+                    time.sleep(delay)
+                    if not r.has_rest_connector(value['address'], value['port']): 
+                        return True
+                    retry += 1
+                    delay *= 2
+                else: return False
             return True
     return False
 

@@ -4,9 +4,6 @@ Created on 24 oct. 2013
 @author: Christophe Vedel <christophe.vedel@scality.com>
 '''
 
-import scality_node
-
- 
 def added(name,
           ring,
           supervisor):   
@@ -31,7 +28,7 @@ def added(name,
     if not __salt__['scality.ringsh_at_least']('4.2'):  # @UndefinedVariable
         ret['comment'] = 'Adding a rest connector to a ring is not supported by your version of ringsh/pyscality'
         ret['result'] = False
-    return ret
+        return ret
 
     current_ring = __salt__['scality.get_rest_connector_ring'](name, supervisor)  # @UndefinedVariable
     if ring == current_ring:  # @UndefinedVariable

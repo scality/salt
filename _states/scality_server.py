@@ -5,7 +5,6 @@ Created on 24 oct. 2013
 '''
 
 import logging
-import time
 
 log = logging.getLogger(__name__)
 
@@ -37,7 +36,7 @@ def registered(name,
     if not __salt__['scality.ringsh_at_least']('4.2'):  # @UndefinedVariable
         ret['comment'] = 'Server registration is not supported by your version of ringsh/pyscality'
         ret['result'] = False
-    return ret
+        return ret
 
     servers = __salt__['scality.list_servers'](supervisor)  # @UndefinedVariable
     matched = None
@@ -48,7 +47,7 @@ def registered(name,
             return ret
         if match_name or match_id:
             matched = s
-    
+
     if __opts__['test']:  # @UndefinedVariable
         msg = 'Server {0} ({1}:{2}) must be registered with {3}'.format(name, address, port, supervisor)
         if matched:
@@ -60,23 +59,12 @@ def registered(name,
     if matched:
         # remove the already registered server
         __salt__['scality.remove_server'](address, supervisor, port)  # @UndefinedVariable
-        
-    if __salt__['scality.add_server'](name, address, supervisor, port):  # @UndefinedVariable
+
+    version = __salt__['scality.add_server'](name, address, supervisor, port)  # @UndefinedVariable
+    if version:
         ret['comment'] = 'Server {0} ({1}:{2}) has been registered with {3}'.format(name, address, port, supervisor)
-        ret['changes'][name] = 'Registered'
-    retry = 0
-    wait = 2
-    while retry < 3:
-        time.sleep(wait)
-        servers = __salt__['scality.list_servers'](supervisor)  # @UndefinedVariable
-        for server in servers:
-            if server['name'] == name and len(server['version']) > 0:
-                ret['changes'][name] = 'Registered (connected)'
-                log.info('Supervisor connected to %s, reported version is %s' % (name, server['version']))
-            return ret
-        retry = retry  + 1
-        wait = wait * 2
-        log.warning('%s not found or not connected in server list: %s, waiting %d seconds' % (name, repr(servers), wait))
+        ret['changes'][name] = 'Registered (connected)'
+        log.info('Supervisor connected to %s, reported version is %s' % (name, version))
     else:
         ret['comment'] = 'Failed to register server {0} ({1}:{2}) with {3}'.format(name, address, port, supervisor)
         ret['result'] = False

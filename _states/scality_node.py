@@ -44,7 +44,7 @@ def added(name,
     if not __salt__['scality.ringsh_at_least']('4.2'):  # @UndefinedVariable
         ret['comment'] = 'Adding a node to a ring is not supported by your version of ringsh/pyscality'
         ret['result'] = False
-    return ret
+        return ret
 
     if current_ring:
         if not __salt__['scality.remove_node'](name, current_ring, supervisor):  # @UndefinedVariable
@@ -111,8 +111,12 @@ def _configured(getter,
         if len(diff) is 0: continue
         ret['changes'][module] = ', '.join(['%s: %s -> %s' % (key, v[0], v[1]) for key, v in diff.iteritems()])
         diff = dict((key, v[1]) for key, v in diff.iteritems())
-        setter(supervisor, module, diff)  # @UndefinedVariable
-        ret['comment'] = '{0} configuration changed'.format(otype)
+        if __opts__['test']:  # @UndefinedVariable
+            ret['result'] = None
+            ret['comment'] = '{0} configuration must be changed'.format(otype)
+        else:
+            setter(supervisor, module, diff)  # @UndefinedVariable
+            ret['comment'] = '{0} configuration changed'.format(otype)
     return ret
 
 def configured(name,

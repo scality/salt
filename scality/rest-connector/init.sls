@@ -88,6 +88,8 @@ config-rest-connector:
         ov_protocol_netscript:
           connect timeout: 5
           socket timeout: 30
+    - require:
+      - scality_rest_connector: add-rest-connector
 
 #{%- if pillar['nodes'] is defined %}
 #accessor configSet msgstore_protocol_restapi bwsdrvdataopts "sproxyd_srv=
