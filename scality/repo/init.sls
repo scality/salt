@@ -5,7 +5,7 @@
 scality-repository:
   pkgrepo.managed:
 {%- if grains['os'] == 'Ubuntu' %}
-    - name: deb http://{{login}}:{{password}}@packages.scality.com/{{variant}}/ubuntu/ {{grains['oscodename']}} main
+    - name: deb [arch=amd64] http://{{login}}:{{password}}@packages.scality.com/{{variant}}/ubuntu/ {{grains['oscodename']}} main
     - humanname: Scality {{variant|capitalize}} for {{grains['oscodename']}}
     - file: /etc/apt/sources.list.d/scality.list
     - dist: {{grains['oscodename']}}

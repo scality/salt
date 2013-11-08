@@ -1,3 +1,6 @@
+
+{%- if grains['os_family'] == 'RedHat' %}
+
 include:
   - scality.req.selinux
 
@@ -10,3 +13,5 @@ include:
 "setenforce 0":
   cmd.run:
     - onlyif: test $(getenforce) = "Enforcing"
+
+{%- endif %}

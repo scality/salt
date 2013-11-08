@@ -31,11 +31,12 @@ scality-node-debconf:
         scality-node/keep-config: {'type': 'boolean', 'value': True}
         scality-node/tier2-enabled: {'type': 'boolean', 'value': False}
         scality-node/warning-mount: {'type': 'boolean', 'value': True}
-        scality-node/setup-sagentd: {'type': 'boolean', 'value': False}
+        scality-node/setup-sagentd: {'type': 'boolean', 'value': True}
         scality-node/restart: {'type': 'boolean', 'value': False}
     - require:
       - pkg: debconf-utils
 {%- endif %}
+{#
 scality-node:
   pkg:
     - installed
@@ -134,4 +135,4 @@ config-{{ name_prefix }}{{ loop.index }}:
 
 {% endfor %}
 
-
+#}
