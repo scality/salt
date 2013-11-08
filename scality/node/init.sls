@@ -36,7 +36,6 @@ scality-node-debconf:
     - require:
       - pkg: debconf-utils
 {%- endif %}
-{#
 scality-node:
   pkg:
     - installed
@@ -135,4 +134,3 @@ config-{{ name_prefix }}{{ loop.index }}:
 
 {% endfor %}
 
-#}
