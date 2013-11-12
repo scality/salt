@@ -28,7 +28,7 @@ except:
     pass
 
 INITIAL_DELAY = 2
-MAX_RETRY = 4
+MAX_RETRY = 7
 
 #__outputter__ = {
 #  'compactionstats': 'txt',
@@ -111,8 +111,8 @@ def add_server(name, address, supervisor, port=7084, ssl=False, wait=True):
                 retry = 0
                 while retry < MAX_RETRY:
                     time.sleep(delay)
-                    for x in s.list_servers(name):
-                        if x['name'] == name:
+		    for x in s.list_servers(name):
+                        if x['name'] == name and x['version']:
                             return x['version']
                     retry += 1
                     delay *= 2
