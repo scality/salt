@@ -52,6 +52,17 @@ scality-rest-connector:
 #    - watch:
 #      - pkg: scality-rest-connector
 
+wait-for-rest-connector-startup:
+  cmd.wait:
+    - name: sleep 10
+    - watch:
+{%- if grains['os_family'] == 'RedHat' %}
+      - cmd: scality-rest-connector
+{%- endif %}
+{%- if grains['os_family'] == 'Debian' %}
+      - pkg: scality-rest-connector
+{%- endif %}
+
 {% set data_ring = salt['pillar.get']('scality:rings', 'RING').split(',')[0] %}
 
 add-rest-connector:

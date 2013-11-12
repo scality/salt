@@ -66,6 +66,17 @@ scality-node:
       - file: /etc/sysconfig/scality-node
       - pkg: scality-node
 
+wait-for-node-startup:
+  cmd.wait:
+    - name: sleep 10
+    - watch:
+{%- if grains['os_family'] == 'RedHat' %}
+      - cmd: scality-node
+{%- endif %}
+{%- if grains['os_family'] == 'Debian' %}
+      - pkg: scality-node
+{%- endif %}
+
 /etc/sysconfig/scality-node:
     file:
       - managed
