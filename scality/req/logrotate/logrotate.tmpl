@@ -1,0 +1,12 @@
+{%- set log_base = salt['pillar.get']('scality:log:base_dir', '/var/log') -%}
+{{ log_base }}/scality-*.log {
+    daily
+    rotate 48
+    missingok
+    notifempty
+    compress
+    sharedscripts
+    postrotate
+        /bin/kill -HUP `cat /var/run/rsyslogd.pid 2> /dev/null` 2> /dev/null || true
+    endscript
+}

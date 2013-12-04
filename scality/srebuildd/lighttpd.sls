@@ -8,7 +8,8 @@ extend:
         pkg:
             - name: scality-srebuildd-lighttpd
         service:
-            - name: scality-srebuildd-lighttpd
+          - watch:
+            - pkg: scality-srebuildd-lighttpd
 
 srebuildd-lighttpd-conf:
   file.append:

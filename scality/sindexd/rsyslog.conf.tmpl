@@ -1,0 +1,6 @@
+# rsyslog configuration for sindexd
+{%- set log_base = salt['pillar.get']('scality:log:base_dir', '/var/log') %}
+
+:programname, isequal, "sindexd" {{ log_base }}/scality-sindexd.log
+& ~
+

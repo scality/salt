@@ -6,6 +6,7 @@ include:
 
 {%- set supervisor_ip = salt['pillar.get']('scality:supervisor_ip', '127.0.0.1') %}
 {%- set prod_iface = salt['pillar.get']('scality:prod_iface', 'eth0') %}
+{%- set log_base = salt['pillar.get']('scality:log:base_dir', '/var/log') %}
 {%- set prod_ip = salt['network.ip_addrs'](interface=prod_iface)[0] %}
 {%- set name_prefix = grains['id'] + '-c' %}
 {%- if grains['os_family'] == 'Debian' %}
@@ -92,6 +93,7 @@ config-rest-connector:
           bwsdbmesahost: 127.0.0.1:81
           bwsdbmesauri: /sindexd.fcgi
         ov_core_logs:
+          logsdir: {{ log_base }}/scality-rest-connector
           logsoccurrences: 48
           logsmaxsize: 2000
         ov_protocol_dns:
@@ -112,16 +114,3 @@ config-rest-connector:
 #{%- endfor -%}
 #;sproxyd_uri_arc=/proxy/arc;sproxyd_uri_chord=/proxy/chord"
 #{%- endif %}
-
-
-/etc/rsyslog.d/scality-conn.conf:
-  file:
-    - managed
-    - source : salt://scality/rest-connector/rsyslog.conf
-
-extend:
-  rsyslog:
-    service:
-      - watch:
-        - file: /etc/rsyslog.d/scality-conn.conf
-

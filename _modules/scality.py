@@ -47,6 +47,13 @@ def __virtual__():
 def ringsh_at_least(version):
     return ringsh_version >= LooseVersion(version)
 
+def conf_uses_json(package):
+    version = __salt__['pillar.get']('scality:version') or __salt__['pkg.latest_version'](package) or __salt__['pkg.version'](package) # @UndefinedVariable
+    if 'sfused' in package:
+        return LooseVersion(version) > LooseVersion('4.2')
+    else:
+        return LooseVersion(version) > LooseVersion('4.3')
+
 def bootstrap_list(supervisor, ring, max_size=10):
     '''
     Return a bootstrap list for nodes of the specified ring.
@@ -111,7 +118,7 @@ def add_server(name, address, supervisor, port=7084, ssl=False, wait=True):
                 retry = 0
                 while retry < MAX_RETRY:
                     time.sleep(delay)
-		    for x in s.list_servers(name):
+                    for x in s.list_servers(name):
                         if x['name'] == name and x['version']:
                             return x['version']
                     retry += 1

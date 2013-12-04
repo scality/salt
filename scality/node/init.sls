@@ -12,7 +12,7 @@ include:
 {%- set mount_prefix = salt['pillar.get']('scality:mount_prefix', '/scality/disk') %}
 {%- set nb_disks = salt['pillar.get']('scality:nb_disks', 1) %}
 {%- set name_prefix = salt['pillar.get']('scality:name_prefix', grains['id'] + '-n') %}
-
+{%- set log_base = salt['pillar.get']('scality:log:base_dir', '/var/log') %}
 {%- set prod_ip = salt['network.ip_addrs'](interface=prod_iface)[0] %}
 
 {%- if grains['os_family'] == 'Debian' %}
@@ -82,16 +82,19 @@ wait-for-node-startup:
       - managed
       - source : salt://scality/node/scality-node
 
-/etc/rsyslog.d/scality-nodes.conf:
+{% if  salt['pillar.get']('scality:config_rsyslog', True) %}
+/etc/rsyslog.d/scality-biziod.conf:
   file:
     - managed
-    - source : salt://scality/node/rsyslog.conf
+    - template: jinja
+    - source : salt://scality/node/rsyslog.conf.tmpl
 
 extend:
   rsyslog:
     service:
       - watch:
-        - file: /etc/rsyslog.d/scality-nodes.conf
+        - file: /etc/rsyslog.d/scality-biziod.conf
+{%- endif %}
 
 {% set data_ring = salt['pillar.get']('scality:rings', 'RING').split(',')[0] %}
 
@@ -133,6 +136,7 @@ config-{{ name_prefix }}{{ loop.index }}:
         ov_cluster_node:
           usessl: 0
         ov_core_logs:
+          logsdir: {{ log_base }}/scality-node-{{ loop.index }}
           logsoccurrences: 48
           logsmaxsize: 2000
         ov_protocol_dns:

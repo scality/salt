@@ -1,0 +1,6 @@
+# rsyslog configuration for srebuildd
+{%- set log_base = salt['pillar.get']('scality:log:base_dir', '/var/log') %}
+
+:programname, isequal, "srebuildd" {{ log_base }}/scality-srebuildd.log
+& ~
+

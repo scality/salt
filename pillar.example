@@ -9,4 +9,9 @@ scality:
   nb_disks: 10
   prod_iface: eth0
   supervisor_ip: 127.0.0.1
+  config_rsyslog: True
+  config_logrotate: True
+  log:
+    base_dir: /var/log
+
 

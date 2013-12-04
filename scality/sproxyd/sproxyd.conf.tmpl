@@ -1,8 +1,60 @@
+{% set supervisor_ip = salt['pillar.get']('scality:supervisor_ip', '127.0.0.1') %}
+{% set data_ring = salt['pillar.get']('scality:rings', 'RING').split(',')[0] %}
+{% set bootstrap_list = salt['scality.bootstrap_list'](supervisor_ip, data_ring) %}
+{%- if salt['scality.conf_uses_json']('scality-sproxyd') %}
+{
+    "general": {
+        "conn_max": 10000,
+        "conn_max_reuse": 100000,
+        "consistent_reads": true,
+        "consistent_writes": true,
+        "max_proc_fd": 40960,
+        "port": 10000,
+        "split_chunk_size": 33554432,
+        "split_control_by_request": false,
+        "split_enabled": true,
+        "split_gc_cos": 2,
+        "split_memory_limit": 671088640,
+        "split_n_get_workers": 20,
+        "split_n_io_workers": 20,
+        "split_n_put_workers": 20,
+        "split_threshold": 67108864
+    },
+    "ring_driver:0": {
+        "alias": "chord",
+        "bstraplist": "{{ bootstrap_list }}",
+        "by_path_enabled": false,
+        "deferred_deletes_enabled_by_policy": false,
+        "deferred_deletes_enabled_by_request": false,
+        "deferred_writes_enabled_by_policy": false,
+        "deferred_writes_enabled_by_request": false,
+        "type": "chord"
+    },
+    "ring_driver:1": {
+        "alias": "arc",
+        "arc_schema": 18,
+        "bstraplist": "{{ bootstrap_list }}",
+        "by_path_enabled": false,
+        "cache_n_workers": 100,
+        "chordcache_enabled": true,
+        "get_reconstruct_buffer_size": 1048576,
+        "main_n_workers": 100,
+        "max_stripes_in_write_queue": 2,
+        "min_data_part_length": 20000,
+        "min_redundant_parts_put_ok": 2,
+        "n_coding_parts": 4,
+        "n_data_parts": 14,
+        "object_class": 2,
+        "replication_size_threshold": 60000,
+        "stripe_size": 262144,
+        "sub_n_workers": 100,
+        "type": "arc"
+    }
+}
+{%- else %}
 #
 # sproxyd config file
 #
-{% set supervisor_ip = salt['pillar.get']('scality:supervisor_ip', '127.0.0.1') %}
-{% set data_ring = salt['pillar.get']('scality:rings', 'RING').split(',')[0] %}
 
 #number of worker threads per task pool
 #n_workers = 100
@@ -51,7 +103,7 @@ ring_driver = "chord"
 
 #bootstraplist (port 4244 by default)
 #eg. bstraplist = 1.2.3.4:4244,1.2.3.4:4245
-bstraplist = {{ salt['scality.bootstrap_list'](supervisor_ip, data_ring) }}
+bstraplist = {{ bootstrap_list }}
 
 
 
@@ -78,7 +130,7 @@ arc_schema = 6
 
 #bootstraplist (port 4244 by default)
 #eg. bstraplist = 1.2.3.4:4244,1.2.3.4:4245
-bstraplist = {{ salt['scality.bootstrap_list'](supervisor, data_ring) }}
+bstraplist = {{ bootstrap_list }}
 
 
 #
@@ -160,3 +212,4 @@ chordcache_enabled = 1
 
 #get active configuration parameters, each on a line with format key=value
 #curl http://localhost:81/proxy/chord/.conf
+{%- endif %}

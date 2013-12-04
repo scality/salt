@@ -1,8 +1,24 @@
+{% set supervisor_ip = salt['pillar.get']('scality:supervisor_ip', '127.0.0.1') %}
+{% set data_ring = salt['pillar.get']('scality:rings', 'RING').split(',')[0] %}
+{%- if salt['scality.conf_uses_json']('scality-srebuildd') %}
+{
+    "general": {
+        "conn_max": 10000,
+        "conn_max_reuse": 100000,
+        "max_proc_fd": 40960,
+        "port": 10002
+    },
+    "ring_driver:0": {
+        "alias": "arcdata",
+        "bstraplist": "{{ salt['scality.bootstrap_list'](supervisor_ip, data_ring) }}",
+        "get_reconstruct_buffer_size": 1048576,
+        "type": "arcdata"
+    }
+}
+{%- else %}
 #
 # sproxyd config file
 #
-{% set supervisor_ip = salt['pillar.get']('scality:supervisor_ip', '127.0.0.1') %}
-{% set data_ring = salt['pillar.get']('scality:rings', 'RING').split(',')[0] %}
 
 #number of worker threads per task pool
 #n_workers = 100
@@ -84,3 +100,5 @@ get_reconstruct_buffer_size = 1048576
 
 #get active configuration parameters, each on a line with format key=value
 #curl http://localhost:81/rebuild/chord/.conf
+
+{%- endif %}
