@@ -5,11 +5,11 @@
 # - to listen on port 81
 # - to move User/Group definition before modules are included (fastcgi breaks if this is not the case)
 
-{% from "scality/map.jinja" import apache with context %}
+{% from "scality/map.jinja" import scality with context %}
 
 sd-apache-frontend:
   service.running:
-    - name: {{ apache.name }}
+    - name: {{ scality.apache_name }}
 {%- if grains['os_family'] == 'RedHat' %}
     - watch:
         - file: /etc/httpd/conf/httpd.conf

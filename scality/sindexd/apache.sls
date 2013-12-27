@@ -1,5 +1,5 @@
 
-{% from "scality/map.jinja" import apache with context %}
+{% from "scality/map.jinja" import scality with context %}
 
 include:
     - scality.sindexd
@@ -8,8 +8,8 @@ include:
 extend:
     sindexd:
         pkg:
-            - name: scality-sindexd-{{ apache.name }}
+            - name: scality-sindexd-{{ scality.apache_name }}
         service:
             - watch:
-              - pkg: scality-sindexd-{{ apache.name }}
+              - pkg: scality-sindexd-{{ scality.apache_name }}
 

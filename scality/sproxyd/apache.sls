@@ -1,5 +1,5 @@
 
-{% from "scality/map.jinja" import apache with context %}
+{% from "scality/map.jinja" import scality with context %}
 
 include:
     - scality.sproxyd
@@ -8,8 +8,8 @@ include:
 extend:
     sproxyd:
         pkg:
-            - name: scality-sproxyd-{{ apache.name }}
+            - name: scality-sproxyd-{{ scality.apache_name }}
         service:
           - watch:
-            - pkg: scality-sproxyd-{{ apache.name }}
+            - pkg: scality-sproxyd-{{ scality.apache_name }}
 

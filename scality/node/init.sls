@@ -6,6 +6,8 @@ include:
   - scality.req.hosts
   - scality.python
 
+{% from "scality/map.jinja" import scality with context %}
+
 {%- set supervisor_ip = salt['pillar.get']('scality:supervisor_ip', '127.0.0.1') %}
 {%- set prod_iface = salt['pillar.get']('scality:prod_iface', 'eth0') %}
 {%- set nb_nodes = salt['pillar.get']('scality:nb_nodes', 6) %}
@@ -63,7 +65,7 @@ scality-node:
     - enable: true
     - sig: bizstorenode
     - watch:
-      - file: /etc/sysconfig/scality-node
+      - file: {{ scality.init_conf_dir }}/scality-node
       - pkg: scality-node
 
 wait-for-node-startup:
@@ -77,7 +79,7 @@ wait-for-node-startup:
       - pkg: scality-node
 {%- endif %}
 
-/etc/sysconfig/scality-node:
+{{ scality.init_conf_dir }}/scality-node:
     file:
       - managed
       - source : salt://scality/node/scality-node

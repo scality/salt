@@ -1,5 +1,5 @@
 
-{% from "scality/map.jinja" import apache with context %}
+{% from "scality/map.jinja" import scality with context %}
 
 include:
   - scality.req
@@ -48,7 +48,7 @@ scality-supervisor:
       - cmd: scality-supervisor
 {%- endif %}
 
-{{ apache.name }}:
+{{ scality.apache_name }}:
   service:
     - running
     - enable: True

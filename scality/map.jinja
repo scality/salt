@@ -1,8 +1,10 @@
-{% set apache = salt['grains.filter_by']({
+{% set scality = salt['grains.filter_by']({
     'Debian': {
-        'name': 'apache2',
+        'apache_name': 'apache2',
+        'init_conf_dir': '/etc/default',
     },
     'RedHat': {
-        'name': 'httpd',
+        'apache_name': 'httpd',
+        'init_conf_dir': '/etc/sysconfig',
     },
-}, merge=salt['pillar.get']('apache:lookup')) %}
+}, merge=salt['pillar.get']('scality:lookup'))%}
