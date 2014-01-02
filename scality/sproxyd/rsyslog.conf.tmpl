@@ -1,0 +1,6 @@
+# rsyslog configuration for sproxyd
+{%- set log_base = salt['pillar.get']('scality:log:base_dir', '/var/log') %}
+
+:programname, isequal, "sproxyd" {{ log_base }}/scality-sproxyd.log
+& ~
+

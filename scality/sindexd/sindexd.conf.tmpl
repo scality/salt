@@ -1,0 +1,21 @@
+#
+# sindexd config file
+#
+
+{% set supervisor_ip = salt['pillar.get']('scality:supervisor_ip', '127.0.0.1') %}
+{% set data_ring = salt['pillar.get']('scality:rings', 'RING').split(',')[0] %}
+
+#bootstraplist (port 4244 by default)
+#bstraplist = node1,node2,node3:4243,10.0.0.1:4244
+bstraplist = {{ salt['scality.bootstrap_list'](supervisor_ip, data_ring) }}
+
+compression=1
+compression_level=1
+compression_type=zlib
+
+# default is 150000000 
+# wcache_max_size=150000000
+# default is 500000000
+# rcache_max_size=500000000
+
+#get .conf to get other configuration variables: curl -0 -G http://localhost:81/sindexd.fcgi?.conf

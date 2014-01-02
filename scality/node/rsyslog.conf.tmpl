@@ -1,0 +1,6 @@
+# rsyslog configuration for biziod
+{%- set log_base = salt['pillar.get']('scality:log:base_dir', '/var/log') %}
+
+:programname, isequal, "biziod" {{ log_base }}/scality-biziod.log
+& ~
+
