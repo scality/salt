@@ -1,5 +1,6 @@
 include:
   - .hosts
+  - .credentials
   - .kernel
   - .ntp
   - .rsyslog

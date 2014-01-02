@@ -17,8 +17,11 @@ extend:
                 -i {{ prod_ip }}
       - template: jinja
       - unless: test -d /etc/scality-rest-connector
+      - env:
+        - SCALITY_AUTH_FILE: /root/default_credentials.json
       - require:
         - pkg: scality-rest-connector
+        - file: /root/default_credentials.json
     service:
       - require:
         - cmd: scality-rest-connector

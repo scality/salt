@@ -19,9 +19,12 @@ extend:
                 -I {{ prod_ip }}
       - template: jinja
       - unless: test -d /etc/scality-node-1
+      - env:
+        - SCALITY_AUTH_FILE: /root/default_credentials.json
       - require:
         - pkg: scality-node
         - host: {{ grains['id'] }}
+        - file: /root/default_credentials.json
     service:
       - require:
         - cmd: scality-node
