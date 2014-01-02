@@ -98,24 +98,22 @@ extend:
         - file: /etc/rsyslog.d/scality-biziod.conf
 {%- endif %}
 
-{% set data_ring = salt['pillar.get']('scality:rings', 'RING').split(',')[0] %}
-
-{%- for node in range(nb_nodes) %}
+{%- for node in salt['scality.nodes']() %}
 
 # add the node to its ring
-add-{{ name_prefix }}{{ loop.index }}:
+add-{{ node.name }}:
   scality_node.added:
-    - name: {{ name_prefix }}{{ loop.index }}
-    - ring: {{ data_ring }} 
+    - name: {{ node.name }}
+    - ring: {{ node.ring }}
     - supervisor: {{ supervisor_ip }} 
     - require:
       - scality_server: register-{{grains['id']}}
 
 # set a few configuration values where the default is lacking
-config-{{ name_prefix }}{{ loop.index }}:
+config-{{ node.name }}:
   scality_node.configured:
-    - name: {{ name_prefix }}{{ loop.index }}
-    - ring: {{ data_ring }}
+    - name: {{ node.name }}
+    - ring: {{ node.ring }}
     - supervisor: {{ supervisor_ip }}
     - values:
         msgstore_protocol_chord:
@@ -147,7 +145,7 @@ config-{{ name_prefix }}{{ loop.index }}:
           connect timeout: 5
           socket timeout: 30
     - require:
-      - scality_node: add-{{ name_prefix }}{{ loop.index }}
+      - scality_node: add-{{ node.name }}
 
 {% endfor %}
 

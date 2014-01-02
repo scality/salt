@@ -8,6 +8,6 @@ BIZSTORENODE_OPTIONS=""
 # keep bp as defined and add extra parameters separated by escaped semicolons (\;)
 # $i will be substituted by the disk number
 # the string must be single quoted
-BIZIOD_PARAMS='bp=$mnt_prefix$i'
+#BIZIOD_PARAMS=''
 
 CORE_PATTERN=/var/tmp/core-%e-%p-%t
