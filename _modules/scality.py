@@ -89,7 +89,11 @@ def nodes(ring=None):
     '''
     Node = namedtuple('Node', ['name', 'ring', 'mgmt_port'])
     name_prefix = __salt__['pillar.get']('scality:name_prefix').split(',') # @UndefinedVariable
-    process_count = [int(v) for v in __salt__['pillar.get']('scality:nb_nodes').split(',')] # @UndefinedVariable
+    nb_nodes = __salt__['pillar.get']('scality:nb_nodes') # @UndefinedVariable
+    try:
+        process_count = [int(v) for v in nb_nodes.split(',')]
+    except AttributeError:
+        process_count = [nb_nodes]
     rings = __salt__['pillar.get']('scality:rings').split(',') # @UndefinedVariable
     nodes = [ '%s%s' % (prefix, _format_num(num,count)) for prefix, count in zip(name_prefix, process_count) for num in range(1, count+1) ]
     ring_list = [ p for p, n in zip(rings, process_count)  for num in range(1, n+1)]
