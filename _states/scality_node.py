@@ -10,7 +10,7 @@ log = logging.getLogger(__name__)
 
 def added(name,
           ring,
-          supervisor):   
+          supervisor=None):
     '''
     Ensure that a node is added to a ring
     
@@ -72,7 +72,7 @@ def _generate_config_getter(name, ring):
 
 def _generate_config_setter(name, ring):
     def set_config(supervisor, module, values):
-        return __salt__['scality.set_config_by_name'](name, ring, supervisor, module, values)  # @UndefinedVariable
+        return __salt__['scality.set_config_by_name'](name, ring, module, values, supervisor)  # @UndefinedVariable
     return set_config
 
 def _configured(getter,
@@ -121,8 +121,8 @@ def _configured(getter,
 
 def configured(name,
                ring,
-               supervisor,
-               values):
+               values,
+               supervisor=None):
     getter = _generate_config_getter(name, ring)
     setter = _generate_config_setter(name, ring)
     return _configured(getter, setter, 'Node', name, supervisor, values)

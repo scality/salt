@@ -10,8 +10,7 @@ def _get_supervisor_config(supervisor):
     return __salt__['scality.get_supervisor_config'](supervisor)  # @UndefinedVariable
 
 def _set_supervisor_config(supervisor, module, values):
-    return __salt__['scality.set_supervisor_config'](supervisor, module, values)  # @UndefinedVariable
+    return __salt__['scality.set_supervisor_config'](module, values, supervisor)  # @UndefinedVariable
 
-def configured(supervisor,
-               values):
+def configured(values, supervisor=None):
     return _configured(_get_supervisor_config, _set_supervisor_config, 'Supervisor', supervisor, supervisor, values)

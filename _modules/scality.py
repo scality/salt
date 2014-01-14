@@ -51,21 +51,32 @@ def conf_uses_json(package):
     else:
         return LooseVersion(version) > LooseVersion('4.3')
 
+def _supervisor_from_pillar():
+    return __salt__['pillar.get']('scality:supervisor_ip', '127.0.0.1') # @UndefinedVariable
+
 def _empty_string(*args, **kwargs):
     return ""
 
 @depends('scalitycs', fallback_function=_empty_string)
-def bootstrap_list(supervisor, ring, max_size=10):
+def bootstrap_list(ring, max_size=10, supervisor=None):
     '''
     Return a bootstrap list for nodes of the specified ring.
     This list is suitable for insertion in a chord driver (sfused.conf, sproxyd.conf).
 
     CLI Example::
 
-        salt '*' scality.bootstrap_list <supervisor> <ring>
-        salt '*' scality.bootstrap_list <supervisor> <ring> <max_size>
+    .. code-block:: bash
+
+        salt '*' scality.bootstrap_list <ring>
+        salt '*' scality.bootstrap_list <ring> <max_size>
+        salt '*' scality.bootstrap_list <ring> <max_size> supervisor=<supervisor>
     '''
+
+    if not supervisor:
+        supervisor = _supervisor_from_pillar()
+
     s = scalitycs.get_supervisor(supervisor)
+
     if ring not in s.get_ring_list():
         msg = 'Ring {0} is not known by the supervisor'
         raise CommandExecutionError(msg.format(ring))
@@ -104,41 +115,59 @@ def nodes(ring=None):
                     yield n
 
 @depends('scalitycs')
-def ring_exists(name, supervisor):
+def ring_exists(name, supervisor=None):
     '''
     '''
+
+    if not supervisor:
+        supervisor = _supervisor_from_pillar()
+
     s = scalitycs.get_supervisor(supervisor)
     return name in s.get_ring_list()
     
 @depends('scalitycs')
-def create_ring(name, supervisor):
+def create_ring(name, supervisor=None):
     '''
     '''
+
+    if not supervisor:
+        supervisor = _supervisor_from_pillar()
+
     s = scalitycs.get_supervisor(supervisor)
     return s.create_ring(name)
 
 @depends('scalitycs')
-def delete_ring(name, supervisor):
+def delete_ring(name, supervisor=None):
     '''
     '''
+
+    if not supervisor:
+        supervisor = _supervisor_from_pillar()
+
     s = scalitycs.get_supervisor(supervisor)
     return s.delete_ring(name)
 
 @depends('scalitycs')
-def list_servers(supervisor=None, sfilter='.*'):
+def list_servers(sfilter='.*', supervisor=None):
     """ serverList [regex]
     Display the list of servers and their current info
     You can filter the result according to the optional argument 'regex'
     """
+    
+    if not supervisor:
+        supervisor = _supervisor_from_pillar()
 
     s = scalitycs.get_supervisor(supervisor)
     return s.list_servers(sfilter)
 
 @depends('scalitycs')
-def add_server(name, address, supervisor, port=7084, ssl=False, wait=True):
+def add_server(name, address, supervisor=None, port=7084, ssl=False, wait=True):
     """    serverAdd <name> <address> <cmpport> [<nossl>]
      Register a new server to this supervisor
     """
+    if not supervisor:
+        supervisor = _supervisor_from_pillar()
+
     s = scalitycs.get_supervisor(supervisor)
     try:
         if s.add_server(name, address, port, ssl):
@@ -162,11 +191,16 @@ def add_server(name, address, supervisor, port=7084, ssl=False, wait=True):
         return False
 
 @depends('scalitycs')
-def remove_server(address, supervisor, port=7084):
+def remove_server(address, supervisor=None, port=7084):
     """    serverAdd <name> <address> <cmpport> [<nossl>]
      Register a new server to this supervisor
     """
+    
+    if not supervisor:
+        supervisor = _supervisor_from_pillar()
+
     s = scalitycs.get_supervisor(supervisor)
+
     try:
         return s.remove_server(address, port)
     except Exception, e:
@@ -174,7 +208,11 @@ def remove_server(address, supervisor, port=7084):
         return False
 
 @depends('scalitycs')
-def get_node_ring(name, supervisor):
+def get_node_ring(name, supervisor=None):
+
+    if not supervisor:
+        supervisor = _supervisor_from_pillar()
+
     s = scalitycs.get_supervisor(supervisor)
     sagentd = yaml.load(open('/etc/sagentd.yaml', 'r'))
     for ring in s.get_ring_list():
@@ -185,7 +223,10 @@ def get_node_ring(name, supervisor):
     return None
 
 @depends('scalitycs')
-def ring_has_node(name, ring, supervisor):
+def ring_has_node(name, ring, supervisor=None):
+    if not supervisor:
+        supervisor = _supervisor_from_pillar()
+
     s = scalitycs.get_supervisor(supervisor)
     r = s.get_ring(ring)
     sagentd = yaml.load(open('/etc/sagentd.yaml', 'r'))
@@ -195,7 +236,10 @@ def ring_has_node(name, ring, supervisor):
     return False
     
 @depends('scalitycs')
-def add_node(name, ring, supervisor, wait=True):
+def add_node(name, ring, supervisor=None, wait=True):
+    if not supervisor:
+        supervisor = _supervisor_from_pillar()
+
     s = scalitycs.get_supervisor(supervisor)
     sagentd = yaml.load(open('/etc/sagentd.yaml', 'r'))
     for n, value in sagentd['daemons'].iteritems():
@@ -216,7 +260,10 @@ def add_node(name, ring, supervisor, wait=True):
     return False
 
 @depends('scalitycs')
-def remove_node(name, ring, supervisor, wait=True):
+def remove_node(name, ring, supervisor=None, wait=True):
+    if not supervisor:
+        supervisor = _supervisor_from_pillar()
+
     s = scalitycs.get_supervisor(supervisor)
     sagentd = yaml.load(open('/etc/sagentd.yaml', 'r'))
     for n, value in sagentd['daemons'].iteritems():
@@ -237,7 +284,10 @@ def remove_node(name, ring, supervisor, wait=True):
     return False
 
 @depends('scalitycs')
-def get_rest_connector_ring(name, supervisor):
+def get_rest_connector_ring(name, supervisor=None):
+    if not supervisor:
+        supervisor = _supervisor_from_pillar()
+
     s = scalitycs.get_supervisor(supervisor)
     sagentd = yaml.load(open('/etc/sagentd.yaml', 'r'))
     for ring in s.get_ring_list():
@@ -248,7 +298,10 @@ def get_rest_connector_ring(name, supervisor):
     return None
 
 @depends('scalitycs')
-def ring_has_rest_connector(name, ring, supervisor):
+def ring_has_rest_connector(name, ring, supervisor=None):
+    if not supervisor:
+        supervisor = _supervisor_from_pillar()
+
     s = scalitycs.get_supervisor(supervisor)
     r = s.get_ring(ring)
     sagentd = yaml.load(open('/etc/sagentd.yaml', 'r'))
@@ -258,7 +311,10 @@ def ring_has_rest_connector(name, ring, supervisor):
     return False
 
 @depends('scalitycs')
-def add_rest_connector(name, ring, supervisor, wait=True):
+def add_rest_connector(name, ring, supervisor=None, wait=True):
+    if not supervisor:
+        supervisor = _supervisor_from_pillar()
+
     s = scalitycs.get_supervisor(supervisor)
     sagentd = yaml.load(open('/etc/sagentd.yaml', 'r'))
     for n, value in sagentd['daemons'].iteritems():
@@ -279,7 +335,10 @@ def add_rest_connector(name, ring, supervisor, wait=True):
     return False
 
 @depends('scalitycs')
-def remove_rest_connector(name, ring, supervisor, wait=True):
+def remove_rest_connector(name, ring, supervisor=None, wait=True):
+    if not supervisor:
+        supervisor = _supervisor_from_pillar()
+
     s = scalitycs.get_supervisor(supervisor)
     sagentd = yaml.load(open('/etc/sagentd.yaml', 'r'))
     for n, value in sagentd['daemons'].iteritems():
@@ -300,18 +359,27 @@ def remove_rest_connector(name, ring, supervisor, wait=True):
     return False
 
 @depends('scalitycs')
-def get_ring_config(ring, supervisor):
+def get_ring_config(ring, supervisor=None):
+    if not supervisor:
+        supervisor = _supervisor_from_pillar()
+
     s = scalitycs.get_supervisor(supervisor)
     status = s.supervisorConfigDso(action="view", dsoname=ring)
     return dict(status["params"])
 
 @depends('scalitycs')
-def set_ring_config(ring, supervisor, values):
+def set_ring_config(ring, values, supervisor=None):
+    if not supervisor:
+        supervisor = _supervisor_from_pillar()
+
     s = scalitycs.get_supervisor(supervisor)
     s.supervisorConfigDso(action="params", dsoname=ring, extra_params=values, doparse=False)
 
 @depends('scalitycs')
-def get_supervisor_config(supervisor, module=None):
+def get_supervisor_config(module=None, supervisor=None):
+    if not supervisor:
+        supervisor = _supervisor_from_pillar()
+
     s = scalitycs.get_supervisor(supervisor)
     all_modules = s.configViewModule()
     if module:
@@ -320,12 +388,18 @@ def get_supervisor_config(supervisor, module=None):
         return all_modules
 
 @depends('scalitycs')
-def set_supervisor_config(supervisor, module, values):
+def set_supervisor_config(module, values, supervisor=None):
+    if not supervisor:
+        supervisor = _supervisor_from_pillar()
+
     s = scalitycs.get_supervisor(supervisor)
     s.configUpdateModule(module, values)
 
 @depends('scalitycs')
-def get_config_by_name(name, ring, supervisor, module=None):
+def get_config_by_name(name, ring, module=None, supervisor=None):
+    if not supervisor:
+        supervisor = _supervisor_from_pillar()
+
     s = scalitycs.get_supervisor(supervisor)
     r = s.get_ring(ring)
     o = r.by_name(name)
@@ -338,7 +412,10 @@ def get_config_by_name(name, ring, supervisor, module=None):
         return all_modules
 
 @depends('scalitycs')
-def set_config_by_name(name, ring, supervisor, module, values):
+def set_config_by_name(name, ring, module, values, supervisor=None):
+    if not supervisor:
+        supervisor = _supervisor_from_pillar()
+
     s = scalitycs.get_supervisor(supervisor)
     r = s.get_ring(ring)
     o = r.by_name(name)

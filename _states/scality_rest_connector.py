@@ -6,7 +6,7 @@ Created on 24 oct. 2013
 
 def added(name,
           ring,
-          supervisor):   
+          supervisor=None):
     '''
     Ensure that a rest connector is added to a ring
     
@@ -65,8 +65,8 @@ from scality_node import _generate_config_getter, _generate_config_setter, _conf
 
 def configured(name,
                ring,
-               supervisor,
-               values):
+               values,
+               supervisor=None):
     getter = _generate_config_getter(name, ring)
     setter = _generate_config_setter(name, ring)
     return _configured(getter, setter, 'RS2 connector', name, supervisor, values)

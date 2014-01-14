@@ -5,7 +5,7 @@ Created on 17 juin 2013
 '''
 
 def present(name, 
-            supervisor = '127.0.0.1'):
+            supervisor=None):
     '''
     Ensure that a ring is created in the supervisor.
     
@@ -19,7 +19,8 @@ def present(name,
     ret = {'name': name,
            'changes': {},
            'result': True,
-           'comment': 'Ring {0} already exists at {1}'.format(name, supervisor)}
+           'comment': 'Ring {0} already exists'.format(name)}
+
     if __salt__['scality.ring_exists'](name, supervisor):  # @UndefinedVariable
         return ret
    
@@ -43,8 +44,8 @@ def present(name,
     return ret
 
 def configured(ring,
-               supervisor,
-               values):
+               values,
+               supervisor=None):
     ret = {'name': ring,
            'changes': {},
            'result': True,
@@ -64,7 +65,7 @@ def configured(ring,
             ret['comment'] = 'Ring configuration value {0} is unknown'.format(key)
             return ret
     if len(changes) > 0:
-        __salt__['scality.set_ring_config'](ring, supervisor, changes)  # @UndefinedVariable
+        __salt__['scality.set_ring_config'](ring, changes, supervisor)  # @UndefinedVariable
         ret['comment'] = 'Ring configuration changed'
     return ret
     

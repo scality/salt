@@ -70,7 +70,7 @@ scality-node:
 
 wait-for-node-startup:
   cmd.wait:
-    - name: sleep 10
+    - name: sleep 10 || true
     - watch:
 {%- if grains['os_family'] == 'RedHat' %}
       - cmd: scality-node
@@ -114,7 +114,6 @@ config-{{ node.name }}:
   scality_node.configured:
     - name: {{ node.name }}
     - ring: {{ node.ring }}
-    - supervisor: {{ supervisor_ip }}
     - values:
         msgstore_protocol_chord:
           chordchecklocalnbchunks: 300

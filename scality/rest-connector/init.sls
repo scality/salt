@@ -70,7 +70,6 @@ add-rest-connector:
   scality_rest_connector.added:
     - name: {{ name_prefix }}1
     - ring: {{ data_ring }}
-    - supervisor: {{ supervisor_ip }}
     - require:
       - scality_server: register-{{grains['id']}}
 
@@ -78,7 +77,6 @@ config-rest-connector:
   scality_rest_connector.configured:
     - name: {{ name_prefix }}1
     - ring: {{ data_ring }}
-    - supervisor: {{ supervisor_ip }}
     - values:
         msgstore_protocol_restapi:
           bwsdeferredpolicy: -1

@@ -53,7 +53,6 @@ register-{{grains['id']}}:
     - registered
     - name: {{ grains['id'] }}
     - address: {{ prod_ip }}
-    - supervisor: {{ supervisor_ip }}
     - require:
       - pkg: python-scalitycs
       - service: scality-sagentd

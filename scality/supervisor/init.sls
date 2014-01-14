@@ -6,7 +6,6 @@ include:
   - scality.repo
   - scality.python
 
-{% set supervisor_ip = salt['pillar.get']('scality:supervisor_ip', '127.0.0.1') %}
 {%- set log_base = salt['pillar.get']('scality:log:base_dir', '/var/log') %}
 
 {%- if grains['os_family'] == 'Debian' %}
@@ -57,7 +56,6 @@ scality-supervisor:
 
 scality-supervisor-config:
   scality_supervisor.configured:
-    - supervisor: {{ supervisor_ip }}
     - values:
         ov_core_logs:
           logsdir: {{ log_base }}/scality-supervisor
@@ -71,7 +69,6 @@ scality-supervisor-config:
 {%- for ring in rings %}
 {{ ring }}:
   scality_ring.present:
-    - supervisor: {{ supervisor_ip }} 
     - require:
       - service: scality-supervisor
       - pkg: python-scalitycs

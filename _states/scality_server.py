@@ -10,7 +10,7 @@ log = logging.getLogger(__name__)
 
 def registered(name,
                address,
-               supervisor,
+               supervisor=None,
                port=7084):
     '''
     Ensure that a server is registered with the given supervisor
@@ -31,14 +31,14 @@ def registered(name,
     ret = {'name': name,
            'changes': {},
            'result': True,
-           'comment': 'Server {0} ({1}:{2}) is already registered with {3}'.format(name, address, port, supervisor)}
+           'comment': 'Server {0} ({1}:{2}) is already registered'.format(name, address, port)}
 
     if not __salt__['scality.ringsh_at_least']('4.2'):  # @UndefinedVariable
         ret['comment'] = 'Server registration is not supported by your version of ringsh/pyscality'
         ret['result'] = False
         return ret
 
-    servers = __salt__['scality.list_servers'](supervisor)  # @UndefinedVariable
+    servers = __salt__['scality.list_servers'](supervisor=supervisor)  # @UndefinedVariable
     matched = None
     for s in servers:
         match_name = s['name'] == name
@@ -49,7 +49,7 @@ def registered(name,
             matched = s
 
     if __opts__['test']:  # @UndefinedVariable
-        msg = 'Server {0} ({1}:{2}) must be registered with {3}'.format(name, address, port, supervisor)
+        msg = 'Server {0} ({1}:{2}) must be registered'.format(name, address, port)
         if matched:
             msg += ' ({0} ({1}:{2}) must be unregistered first)'.format(matched['name'], matched['ip'], matched['port'])
         ret['result'] = None
@@ -62,11 +62,11 @@ def registered(name,
 
     version = __salt__['scality.add_server'](name, address, supervisor, port)  # @UndefinedVariable
     if version:
-        ret['comment'] = 'Server {0} ({1}:{2}) has been registered with {3}'.format(name, address, port, supervisor)
+        ret['comment'] = 'Server {0} ({1}:{2}) has been registered'.format(name, address, port)
         ret['changes'][name] = 'Registered (connected)'
         log.info('Supervisor connected to %s, reported version is %s' % (name, version))
     else:
-        ret['comment'] = 'Failed to register server {0} ({1}:{2}) with {3}'.format(name, address, port, supervisor)
+        ret['comment'] = 'Failed to register server {0} ({1}:{2})'.format(name, address, port)
         ret['result'] = False
         
     return ret

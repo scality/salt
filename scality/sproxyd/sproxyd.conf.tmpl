@@ -1,6 +1,5 @@
-{% set supervisor_ip = salt['pillar.get']('scality:supervisor_ip', '127.0.0.1') %}
 {% set data_ring = salt['pillar.get']('scality:rings', 'RING').split(',')[0] %}
-{% set bootstrap_list = salt['scality.bootstrap_list'](supervisor_ip, data_ring) %}
+{% set bootstrap_list = salt['scality.bootstrap_list'](data_ring) %}
 {%- if salt['scality.conf_uses_json']('scality-sproxyd') %}
 {
     "general": {
