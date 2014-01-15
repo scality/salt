@@ -12,3 +12,9 @@ vm.min_free_kbytes:
     sysctl:
         - present
         - value: {{ min_free_kbytes|int }}
+
+kernel.sem:
+    sysctl:
+        - present
+        - value: 250  32000 32  256
+
