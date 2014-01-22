@@ -28,9 +28,11 @@ scality-rest-connector-debconf:
 {%- endif %}
 scality-rest-connector:
   pkg:
-    - installed
 {%- if pillar['scality'] is defined and pillar['scality']['version'] is defined %}
     - version: {{ salt['pillar.get']('scality:version') }}
+    - installed
+{%- else %}
+    - latest
 {%- endif %}
     - require:
       - pkgrepo: scality-repository

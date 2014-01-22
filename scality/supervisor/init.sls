@@ -20,9 +20,11 @@ scality-supervisor-debconf:
 
 scality-supervisor:
   pkg:
-    - installed
 {%- if pillar['scality'] is defined and pillar['scality']['version'] is defined %}
     - version: {{ salt['pillar.get']('scality:version') }}
+    - installed
+{%- else %}
+    - latest
 {%- endif %}
     - require:
       - pkgrepo: scality-repository

@@ -3,9 +3,11 @@ include:
 
 scality-ringsh:
   pkg:
-    - installed
 {%- if pillar['scality'] is defined and pillar['scality']['version'] is defined %}
     - version: {{ salt['pillar.get']('scality:version') }}
+    - installed
+{%- else %}
+    - latest
 {%- endif %}
     - names:
         - scality-ringsh
