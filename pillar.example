@@ -1,12 +1,13 @@
 scality:
   variant: stable_isildur
-  version: 4.1.4.r36931-1 # keep commented to install the latest version
+  version: 4.1.4.r36931-1.el6 # comment to install the latest version
   login: your_login
   password: your_password
   rings: DATA,META
   mount_prefix: /scality/disk
-  nb_nodes: 6
   nb_disks: 10
+  name_prefix: {{ grains['id'] }}-n
+  nb_nodes: 6
   prod_iface: eth0
   supervisor_ip: 127.0.0.1
   config_rsyslog: True
