@@ -4,6 +4,15 @@ Created on 24 oct. 2013
 @author: Christophe Vedel <christophe.vedel@scality.com>
 '''
 
+from scality_ov import _listening
+from scality_ov import _generate_config_getter, _generate_config_setter, _configured
+
+def listening(name,
+              address,
+              port=8184,
+              max_retry=20):
+    return _listening(name, address, port, max_retry)
+
 def added(name,
           ring,
           supervisor=None):
@@ -60,8 +69,6 @@ def added(name,
         ret['result'] = False
 
     return ret
-
-from scality_node import _generate_config_getter, _generate_config_setter, _configured
 
 def configured(name,
                ring,

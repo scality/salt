@@ -98,7 +98,7 @@ def nodes(ring=None):
     '''
     Iterate on all nodes or on nodes of the specified ring.
     '''
-    Node = namedtuple('Node', ['name', 'ring', 'mgmt_port'])
+    Node = namedtuple('Node', ['name', 'ring', 'mgmt_port', 'index'])
     name_prefix = __salt__['pillar.get']('scality:name_prefix').split(',') # @UndefinedVariable
     nb_nodes = __salt__['pillar.get']('scality:nb_nodes') # @UndefinedVariable
     try:
@@ -109,10 +109,10 @@ def nodes(ring=None):
     nodes = [ '%s%s' % (prefix, _format_num(num,count)) for prefix, count in zip(name_prefix, process_count) for num in range(1, count+1) ]
     ring_list = [ p for p, n in zip(rings, process_count)  for num in range(1, n+1)]
     mgmt_ports = [ 8084 + n for n in range(sum(process_count))]
-    nodes_list = [ Node._make(x) for x in zip(nodes, ring_list, mgmt_ports)]
+    nodes_list = [ Node._make(x) for x in zip(nodes, ring_list, mgmt_ports, range(1, len(nodes)+1))]
     for n in nodes_list:
-            if not ring or n.ring is ring:
-                    yield n
+        if not ring or n.ring == ring:
+            yield n
 
 @depends('scalitycs')
 def ring_exists(name, supervisor=None):

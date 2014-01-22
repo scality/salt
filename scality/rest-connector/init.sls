@@ -53,10 +53,13 @@ scality-rest-connector:
 #    - watch:
 #      - pkg: scality-rest-connector
 
-wait-for-rest-connector-startup:
-  cmd.wait:
-    - name: sleep 10
-    - watch:
+{% set data_ring = salt['pillar.get']('scality:rings', 'RING').split(',')[0] %}
+
+check-connector-listening:
+  scality_rest_connector.listening:
+    - address: {{ prod_ip }}
+    - require:
+      - scality_server: register-{{ grains['id'] }}
 {%- if grains['os_family'] == 'RedHat' %}
       - cmd: scality-rest-connector
 {%- endif %}
@@ -64,14 +67,12 @@ wait-for-rest-connector-startup:
       - pkg: scality-rest-connector
 {%- endif %}
 
-{% set data_ring = salt['pillar.get']('scality:rings', 'RING').split(',')[0] %}
-
 add-rest-connector:
   scality_rest_connector.added:
     - name: {{ name_prefix }}1
     - ring: {{ data_ring }}
     - require:
-      - scality_server: register-{{grains['id']}}
+      - scality_rest_connector: check-connector-listening
 
 config-rest-connector:
   scality_rest_connector.configured:

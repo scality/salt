@@ -5,8 +5,16 @@ Created on 17 juin 2013
 '''
 
 import logging
+from scality_ov import _listening
+from scality_ov import _generate_config_getter, _generate_config_setter, _configured
 
 log = logging.getLogger(__name__)
+
+def listening(name,
+              address,
+              port=8084,
+              max_retry=20):
+    return _listening(name, address, port, max_retry)
 
 def added(name,
           ring,
@@ -63,60 +71,6 @@ def added(name,
         ret['comment'] = 'Failed to add node to ring {0}'.format(ring)
         ret['result'] = False
 
-    return ret
-
-def _generate_config_getter(name, ring):
-    def get_config(supervisor):
-        return __salt__['scality.get_config_by_name'](name, ring, supervisor)  # @UndefinedVariable
-    return get_config
-
-def _generate_config_setter(name, ring):
-    def set_config(supervisor, module, values):
-        return __salt__['scality.set_config_by_name'](name, ring, module, values, supervisor)  # @UndefinedVariable
-    return set_config
-
-def _configured(getter,
-               setter,
-               otype,
-               name,
-               supervisor,
-               values):
-    ret = {'name': name,
-           'changes': {},
-           'result': True,
-           'comment': '{0} configuration OK'.format(otype)}
-
-    current = getter(supervisor)  # @UndefinedVariable
-    # check specified modules and bail out early if one is unknown
-    for (module, set_values) in values.iteritems():
-        if not current.has_key(module):
-            ret['result'] = False
-            ret['comment'] = '{0} configuration module {1} is unknown'.format(otype, module)
-            return ret
-    # check specified values and bail out early if one is unknown
-    for (module, set_values) in values.iteritems():
-        cur_values = current[module]
-        for key in set_values.iterkeys():
-            if not cur_values.has_key(key):
-                ret['result'] = False
-                ret['comment'] = '{0} configuration value {1}.{2} is unknown'.format(otype, module, key)
-                return ret
-    for (module, set_values) in values.iteritems():
-        cur_values = current[module]
-        diff = {}
-        for (key, set_value) in set_values.iteritems():
-            cur_value = cur_values.get(key, {'value': ''})['value']
-            if cur_value != str(set_value):
-                diff[key] = (cur_value, str(set_value))
-        if len(diff) is 0: continue
-        ret['changes'][module] = ', '.join(['%s: %s -> %s' % (key, v[0], v[1]) for key, v in diff.iteritems()])
-        diff = dict((key, v[1]) for key, v in diff.iteritems())
-        if __opts__['test']:  # @UndefinedVariable
-            ret['result'] = None
-            ret['comment'] = '{0} configuration must be changed'.format(otype)
-        else:
-            setter(supervisor, module, diff)  # @UndefinedVariable
-            ret['comment'] = '{0} configuration changed'.format(otype)
     return ret
 
 def configured(name,

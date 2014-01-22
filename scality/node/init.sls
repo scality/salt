@@ -68,17 +68,6 @@ scality-node:
       - file: {{ scality.init_conf_dir }}/scality-node
       - pkg: scality-node
 
-wait-for-node-startup:
-  cmd.wait:
-    - name: sleep 10 || true
-    - watch:
-{%- if grains['os_family'] == 'RedHat' %}
-      - cmd: scality-node
-{%- endif %}
-{%- if grains['os_family'] == 'Debian' %}
-      - pkg: scality-node
-{%- endif %}
-
 {{ scality.init_conf_dir }}/scality-node:
     file:
       - managed
@@ -98,7 +87,36 @@ extend:
         - file: /etc/rsyslog.d/scality-biziod.conf
 {%- endif %}
 
-{%- for node in salt['scality.nodes']() %}
+
+{% macro for_all_nodes() -%}
+{% set xnodes = salt['scality.nodes']() if salt.has_key('scality.nodes') else () %}
+{% for xnode in xnodes %}
+{{ caller(node=xnode) }}
+{% endfor %}
+{%- endmacro %}
+
+{% macro for_nodes_in(ring) -%}
+{% set xnodes = salt['scality.nodes'](ring=ring) if salt.has_key('scality.nodes') else () %}
+{% for xnode in xnodes %}
+{{ caller(node=xnode) }}
+{% endfor %}
+{%- endmacro %}
+
+{% call(node) for_all_nodes() %}
+
+# make sure the node is listening before we try to add it
+check-{{ node.name }}-listening:
+  scality_node.listening:
+    - address: {{ prod_ip }}
+    - port: {{ node.mgmt_port }}
+    - require:
+      - scality_server: register-{{grains['id']}}
+{%- if grains['os_family'] == 'RedHat' %}
+      - cmd: scality-node
+{%- endif %}
+{%- if grains['os_family'] == 'Debian' %}
+      - pkg: scality-node
+{%- endif %}
 
 # add the node to its ring
 add-{{ node.name }}:
@@ -107,7 +125,7 @@ add-{{ node.name }}:
     - ring: {{ node.ring }}
     - supervisor: {{ supervisor_ip }} 
     - require:
-      - scality_server: register-{{grains['id']}}
+      - scality_node: check-{{ node.name }}-listening
 
 # set a few configuration values where the default is lacking
 config-{{ node.name }}:
@@ -135,7 +153,7 @@ config-{{ node.name }}:
         ov_cluster_node:
           usessl: 0
         ov_core_logs:
-          logsdir: {{ log_base }}/scality-node-{{ loop.index }}
+          logsdir: {{ log_base }}/scality-node-{{ node.index }}
           logsoccurrences: 48
           logsmaxsize: 2000
         ov_protocol_dns:
@@ -146,5 +164,5 @@ config-{{ node.name }}:
     - require:
       - scality_node: add-{{ node.name }}
 
-{% endfor %}
+{% endcall %}
 
