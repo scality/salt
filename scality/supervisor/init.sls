@@ -56,6 +56,13 @@ scality-supervisor:
     - require:
       - pkg: scality-supervisor
 
+check-supervisor-listening:
+  scality_supervisor.listening:
+    - require:
+      - service: scality-supervisor
+    - watch:
+      - service: scality-supervisor
+
 scality-supervisor-config:
   scality_supervisor.configured:
     - values:
@@ -64,7 +71,7 @@ scality-supervisor-config:
           logsoccurrences: 48
           logsmaxsize: 2000
     - require:
-      - service: scality-supervisor
+      - scality_supervisor: check-supervisor-listening
 
 {% set rings = salt['pillar.get']('scality:rings', 'RING').split(',') %}
 
@@ -72,6 +79,6 @@ scality-supervisor-config:
 {{ ring }}:
   scality_ring.present:
     - require:
-      - service: scality-supervisor
+      - scality_supervisor: check-supervisor-listening
       - pkg: python-scalitycs
 {% endfor %}
