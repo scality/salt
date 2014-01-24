@@ -55,7 +55,7 @@ scality-node:
 {%- if grains['os_family'] == 'RedHat' %}
 # scality-node-config options, RedHat style
   cmd.run:
-    - name: /usr/local/bin/scality-node-config -p {{ mount_prefix }} -d {{ nb_disks }} -n {{ nb_nodes }} -m {{ name_prefix }} -i {{ prod_ip }}
+    - name: /usr/local/bin/scality-node-config -p {{ mount_prefix }} -d {{ nb_disks }} -n {{ nb_nodes }} -m {{ name_prefix }} -I {{ prod_ip }}
     - template: jinja
     - unless: test -d /etc/scality-node-1
     - require:
