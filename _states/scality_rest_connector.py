@@ -4,14 +4,19 @@ Created on 24 oct. 2013
 @author: Christophe Vedel <christophe.vedel@scality.com>
 '''
 
-from scality_ov import _listening
-from scality_ov import _generate_config_getter, _generate_config_setter, _configured
-
 def listening(name,
               address,
               port=8184,
               max_retry=20):
-    return _listening(name, address, port, max_retry)
+    ret = {'name': name,
+           'changes': {},
+           'result': True,
+           'comment': 'Process is listening on {0}:{1}'.format(address, port)}
+    result = __salt__['scality.check_process_listening'](address, port, max_retry) # @UndefinedVariable
+    if result < 0:
+        ret['result'] = False
+        ret['comment'] = 'No process is listening on {0}:{1} ({2})'.format(address, port, -result)
+    return ret
 
 def added(name,
           ring,
@@ -74,7 +79,19 @@ def configured(name,
                ring,
                values,
                supervisor=None):
-    getter = _generate_config_getter(name, ring)
-    setter = _generate_config_setter(name, ring)
-    return _configured(getter, setter, 'RS2 connector', name, supervisor, values)
-
+    ret = {'name': name,
+           'changes': {},
+           'result': True,
+           'comment': 'RS2 connector configuration OK'}
+    try:
+        ret['changes'] = __salt__['scality.ov_configure'](name, supervisor, values, ring=ring, test=__opts__['test']) # @UndefinedVariable
+        if len(ret['changes']) > 0:
+            if __opts__['test']: # @UndefinedVariable
+                ret['result'] = None
+                ret['comment'] = 'RS2 connector configuration must be changed'
+            else:
+                ret['comment'] = 'RS2 connector configuration changed'
+    except Exception, exc:
+        ret['result'] = False
+        ret['comment'] = repr(exc)
+    return ret

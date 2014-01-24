@@ -5,8 +5,6 @@ Created on 17 juin 2013
 '''
 
 import logging
-from scality_ov import _listening
-from scality_ov import _generate_config_getter, _generate_config_setter, _configured
 
 log = logging.getLogger(__name__)
 
@@ -14,7 +12,15 @@ def listening(name,
               address,
               port=8084,
               max_retry=20):
-    return _listening(name, address, port, max_retry)
+    ret = {'name': name,
+           'changes': {},
+           'result': True,
+           'comment': 'Process is listening on {0}:{1}'.format(address, port)}
+    result = __salt__['scality.check_process_listening'](address, port, max_retry) # @UndefinedVariable
+    if result < 0:
+        ret['result'] = False
+        ret['comment'] = 'No process is listening on {0}:{1} ({2})'.format(address, port, -result)
+    return ret
 
 def added(name,
           ring,
@@ -77,6 +83,19 @@ def configured(name,
                ring,
                values,
                supervisor=None):
-    getter = _generate_config_getter(name, ring)
-    setter = _generate_config_setter(name, ring)
-    return _configured(getter, setter, 'Node', name, supervisor, values)
+    ret = {'name': name,
+           'changes': {},
+           'result': True,
+           'comment': 'Node configuration OK'}
+    try:
+        ret['changes'] = __salt__['scality.ov_configure'](name, supervisor, values, ring=ring, test=__opts__['test']) # @UndefinedVariable
+        if len(ret['changes']) > 0:
+            if __opts__['test']: # @UndefinedVariable
+                ret['result'] = None
+                ret['comment'] = 'Node configuration must be changed'
+            else:
+                ret['comment'] = 'Node configuration changed'
+    except Exception, exc:
+        ret['result'] = False
+        ret['comment'] = repr(exc)
+    return ret

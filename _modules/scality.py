@@ -12,6 +12,7 @@ import logging
 logger = logging.getLogger(__name__)
 import yaml
 from distutils.version import LooseVersion
+import socket
 import time
 
 try:
@@ -53,6 +54,15 @@ def conf_uses_json(package):
 
 def _supervisor_from_pillar():
     return __salt__['pillar.get']('scality:supervisor_ip', '127.0.0.1') # @UndefinedVariable
+
+def _production_ip_from_pillar():
+    prod_iface = __salt__['pillar.get']('scality:prod_iface') # @UndefinedVariable
+    if not prod_iface:
+        raise CommandExecutionError('No address, pass it or set scality:prod_iface in the pillar')
+    production_ip = __salt__['network.ip_addrs'](interface=prod_iface)[0] # @UndefinedVariable
+    if not production_ip:
+        raise CommandExecutionError('No address found for interface {0} defined in scality:prod_iface'.format(prod_iface))
+    return production_ip
 
 def _empty_string(*args, **kwargs):
     return ""
@@ -436,4 +446,113 @@ def get_node_config(address, number, module=None):
 def set_node_config(address, number, module, values):
     n = scalitycs.get_node(address, number)
     n.configUpdateModule(module, values)
+
+
+@depends('scalitycs')
+def wait_for_nodes_available(address=None,
+              nb_nodes_expected=None,
+              supervisor=None,
+              max_retry=20):
+    if not address:
+        address = _production_ip_from_pillar()
+    if not nb_nodes_expected:
+        # by default, use the number of configured nodes
+        nb_nodes = __salt__['pillar.get']('scality:nb_nodes') # @UndefinedVariable
+        try:
+            nb_nodes_expected = sum([int(v) for v in nb_nodes.split(',')])
+        except AttributeError:
+            nb_nodes_expected = nb_nodes
+    if not supervisor:
+        supervisor = _supervisor_from_pillar()
+    s = scalitycs.get_supervisor(supervisor)
+    rings = s.get_ring_list()
+    delay = 30
+    nb_try = 0
+    while nb_try < max_retry:
+        nb_nodes_available = 0
+        for ring in rings:
+            nodes = s.get_info(ring)['nodes']
+            for node in nodes:
+                states = node['state']
+                if node['ip'] == address and ('RUN' in states or 'NEW' in states):
+                    nb_nodes_available = nb_nodes_available + 1
+        if nb_nodes_available == nb_nodes_expected:
+            return True
+        logger.info('Only {0} nodes out of {1} available, will check again in {2} seconds'.format(nb_nodes_available, nb_nodes_expected, delay))
+        time.sleep(delay)
+        delay = delay * 2
+        nb_try = nb_try + 1
+    return False
+
+def generate_config_getter(name, ring):
+    def get_config(supervisor):
+        return get_config_by_name(name, ring, supervisor)
+    return get_config
+
+def generate_config_setter(name, ring):
+    def set_config(supervisor, module, values):
+        return set_config_by_name(name, ring, module, values, supervisor)
+    return set_config
+
+@depends('scalitycs')
+def ov_configure(name,
+                 supervisor,
+                 values,
+                 getter=None,
+                 setter=None,
+                 ring=None,
+                 test=False):
+
+    if not getter:
+        if not ring:
+            raise CommandExecutionError('Either getter or ring must be specified')
+        getter = generate_config_getter(name, ring)
+    if not setter:
+        if not ring:
+            raise CommandExecutionError('Either setter or ring must be specified')
+        setter = generate_config_setter(name, ring)
+    current = getter(supervisor)
+    # check specified modules and bail out early if one is unknown
+    for (module, set_values) in values.iteritems():
+        if not current.has_key(module):
+            raise CommandExecutionError('Configuration module {0} is unknown'.format(module))
+    # check specified values and bail out early if one is unknown
+    for (module, set_values) in values.iteritems():
+        cur_values = current[module]
+        for key in set_values.iterkeys():
+            if not cur_values.has_key(key):
+                raise CommandExecutionError('Configuration value {0}.{1} is unknown'.format(module, key))
+    changes = {}
+    for (module, set_values) in values.iteritems():
+        cur_values = current[module]
+        diff = {}
+        for (key, set_value) in set_values.iteritems():
+            cur_value = cur_values.get(key, {'value': ''})['value']
+            if cur_value != str(set_value):
+                diff[key] = (cur_value, str(set_value))
+        if len(diff) is 0: continue
+        changes[module] = ', '.join(['%s: %s -> %s' % (key, v[0], v[1]) for key, v in diff.iteritems()])
+        diff = dict((key, v[1]) for key, v in diff.iteritems())
+        if not test:
+            setter(supervisor, module, diff)
+    return changes
+
+def check_process_listening(address,
+              port,
+              max_retry=20):
+
+    retry = 0
+    result = 0
+    while retry < max_retry:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        result = s.connect_ex((address, port))
+
+        if result == 0:
+            s.close()
+            break
+        retry = retry + 1
+        time.sleep(5)
+    else:
+        return -result
+    return 0
 

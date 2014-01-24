@@ -13,7 +13,7 @@ def registered(name,
                supervisor=None,
                port=7084):
     '''
-    Ensure that a server is registered with the given supervisor
+    Ensure that a server is registered with the given supervisor.
     
     name
         the name of the server to register
@@ -71,3 +71,47 @@ def registered(name,
         
     return ret
     
+def available(name,
+              address=None,
+              nb_nodes_expected=None,
+              supervisor=None,
+              max_retry=20
+              ):
+    '''
+    Ensure all nodes on a server are available (i.e. in the NEW or the RUN state).
+    This function is designed to wait for the scality-node service to restart and
+    for nodes to rejoin the ring typically after an update. Along with the use of
+    a batch size of 1, it allows correct server by server software updates.
+    '''
+
+    ret = {'name': name,
+           'changes': {},
+           'result': True,
+           'comment': 'All expected nodes are available'}
+
+    if not address:
+        # by default, use the production IP
+        prod_iface = __salt__['pillar.get']('scality:prod_iface') # @UndefinedVariable
+        if not prod_iface:
+            ret['comment'] = 'No address, pass it or set scality:prod_iface in the pillar'
+            ret['result'] = False
+            return ret
+        address = __salt__['network.ip_addrs'](interface=prod_iface)[0] # @UndefinedVariable
+        if not address:
+            ret['comment'] = 'No address found for interface {0} defined in scality:prod_iface'.format(prod_iface)
+            ret['result'] = False
+            return ret
+
+    if not nb_nodes_expected:
+        # by default, use the number of configured nodes
+        nb_nodes = __salt__['pillar.get']('scality:nb_nodes') # @UndefinedVariable
+        try:
+            nb_nodes_expected = sum([int(v) for v in nb_nodes.split(',')])
+        except AttributeError:
+            nb_nodes_expected = nb_nodes
+
+    if not __salt__['scality.wait_for_nodes_available'](address, nb_nodes_expected, supervisor, max_retry):  # @UndefinedVariable
+        ret['comment'] = 'Time out waiting for nodes of server at {0} to be available'.format(address)
+        ret['result'] = False
+
+    return ret
