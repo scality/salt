@@ -168,3 +168,11 @@ config-{{ node.name }}:
 
 {% endcall %}
 
+all-nodes-available:
+  scality_server.available:
+    - require:
+{%- call(node) for_all_nodes() %}
+      - scality_node: add-{{ node.name }}
+{%- endcall %}
+    - watch:
+      - service: scality-node
