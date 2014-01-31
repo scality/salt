@@ -1,0 +1,105 @@
+{% set meta_cache_size = (mem_total_bytes / 100) %}
+{% set data_cache_size = (9 * mem_total_bytes / 100) %}
+{% set meta_bootstrap_list = salt['scality.bootstrap_list'](metadata_ring) %}
+{% set sproxyd_servers = sproxyd_addresses|join(',') %}
+{
+    "cache:0": {
+        "ring_driver": 0,
+        "serialization": false,
+        "size": {{ meta_cache_size|round|int }},
+        "writeback": "none"
+    },
+    "cache:1": {
+        "ring_driver": 0,
+        "serialization": false,
+        "size": {{ meta_cache_size|round|int }},
+        "writeback": "none"
+    },
+    "cache:2": {
+        "ring_driver": 1,
+        "serialization": false,
+        "size": {{ data_cache_size|round|int }},
+        "writeback": "none"
+    },
+    "general": {
+        "allow_rootfs_listing": true,
+        "allowed_rootfs_uid": "501",
+        "cache_check_time": 0,
+        "cache_enable_checks": true,
+        "cache_preview_bytes": 16384,
+        "cache_preview_enable": false,
+        "cache_preview_tail_trick": false,
+        "cache_serialization_dir": "/var/cache/sfused_cache",
+        "cache_serialization_period": 600,
+        "cat_cos": 4,
+        "cat_page_cos": 2,
+        "conn_max": 10000,
+        "conn_max_reuse": 100000,
+        "conn_tcp_nodelay": true,
+        "dev": 987654323,
+        "dir_cos": 4,
+        "dir_page_cos": 2,
+        "file_cos": 2,
+        "group_check": false,
+        "honor_forget": true,
+        "inode_cache_size": 65521,
+        "logger_id": "sfused",
+        "max_proc_fd": 40960,
+        "n_workers": 480,
+        "rootfs": true,
+        "rootfs_cache": 1,
+        "rootfs_cos": 4,
+        "rootfs_type": "md5",
+        "syslog_facility": "local2",
+        "undelete": false,
+        "undelete_duration": 300,
+        "undelete_pattern": "^u[.].*",
+        "undelete_pattern_full_path": false,
+        "undelete_purge_threshold": 604800
+    },
+    "ino_mode:0": {
+        "cache": 0,
+        "max_file_size": 536870912,
+        "type": "mem"
+    },
+    "ino_mode:2": {
+        "cache_md": 0,
+        "cache_stripes": 2,
+        "dirty_timeout": 5,
+        "fsid": 1,
+        "fsync_on_close": true,
+        "global_dirty_limit": 1000000000,
+        "main_cos": 4,
+        "page_cos": 2,
+        "pattern": ".*",
+        "pattern_full_path": false,
+        "sticky": true,
+        "stripe_cos": 2,
+        "stripe_size": 2097152,
+        "type": "sparse",
+        "workers_commit": 64,
+        "workers_io": 128
+    },
+    "ino_mode:3": {
+        "cache": 1,
+        "type": "mem"
+    },
+    "ring_driver:0": {
+        "bstraplist": "{{ meta_bootstrap_list }}",
+        "client_routing": false,
+        "type": "chord"
+    },
+    "ring_driver:1": {
+        "base_path": "/proxy/arc/",
+        "bstraplist": "{{ sproxyd_servers }}",
+        "type": "srest"
+    },
+    "transport": {
+        "big_writes": true,
+        "direct_io": false,
+        "max_tasks": 72,
+        "mountpoint": "/ring/0",
+        "read_ahead_kb": 8092,
+        "type": "fuse"
+    }
+}

@@ -1,0 +1,6 @@
+# rsyslog configuration for sfused
+{%- set log_base = salt['pillar.get']('scality:log:base_dir', '/var/log') %}
+
+:programname, isequal, "sfused" {{ log_base }}/scality-sfused.log
+& ~
+
