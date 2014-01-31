@@ -89,6 +89,11 @@ extend:
         - file: /etc/rsyslog.d/scality-biziod.conf
 {%- endif %}
 
+# cap md pool size so that it uses no more than ~4% to avoid freezing machines with not much RAM
+# an md pool entry is 70 bytes, 600 is ~ 0.04 * (1024*1024) / 70
+# 30000000 is OK above 52 GB of RAM
+{% set maxmdpoolsize = 600 * grains['mem_total'] %}
+{% set chunkapimdpoolsize = 30000000 if 30000000 < maxmdpoolsize else maxmdpoolsize %}
 
 {% macro for_all_nodes() -%}
 {% set xnodes = salt['scality.nodes']() if salt.has_key('scality.nodes') else () %}
@@ -150,7 +155,7 @@ config-{{ node.name }}:
           chunkapimaxphysdelete: 10
           chunkapimaxread: 96
           chunkapimaxwrite: 64
-          chunkapimdpoolsize: 30000000
+          chunkapimdpoolsize: {{ chunkapimdpoolsize }}
           chunkapinoatime: 1
         ov_cluster_node:
           usessl: 0
