@@ -45,6 +45,7 @@ scality-sagentd:
     - running
     - require:
       - pkg: scality-sagentd
+      - service: ntpd
     - watch:
       - pkg: scality-sagentd
       - file: /etc/sagentd.yaml

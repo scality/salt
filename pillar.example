@@ -14,5 +14,8 @@ scality:
   config_logrotate: True
   log:
     base_dir: /var/log
+#  ntp:
+#    servers:
+#      - 192.168.1.1
 
 

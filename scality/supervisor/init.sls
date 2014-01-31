@@ -62,6 +62,7 @@ check-supervisor-listening:
       - service: scality-supervisor
     - watch:
       - service: scality-supervisor
+      - service: ntpd
 
 scality-supervisor-config:
   scality_supervisor.configured:
