@@ -1,8 +1,10 @@
 scality:
-  variant: stable_isildur
-  version: 4.1.4.r36931-1.el6 # comment to install the latest version
-  login: your_login
-  password: your_password
+  version: 4.1.4.r36931-1.el6 # comment to install the latest version from configured repository
+  repository:
+      variant: stable_isildur
+      #private: http://my.private.repository/          # uncomment to use a private/local repository
+      login: your_login_for_packages.scality.com       # change when not using private
+      password: your_password_for_packages.scality.com # change when not using private
   rings: DATA,META
   mount_prefix: /scality/disk
   nb_disks: 10
