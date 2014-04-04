@@ -43,6 +43,7 @@ scality-sagentd:
       - pkg: scality-sagentd
   service:
     - running
+    - enable: True
     - require:
       - pkg: scality-sagentd
       - service: ntpd

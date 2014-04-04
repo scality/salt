@@ -40,6 +40,7 @@ sfused:
       - pkg: python-scalitycs
   service:
     - running
+    - enable: True
     - name: scality-sfused
     - watch:
       - file: /etc/sfused.conf

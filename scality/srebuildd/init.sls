@@ -19,6 +19,7 @@ srebuildd:
       - pkgrepo: scality-repository
   service:
     - running
+    - enable: True
     - name: scality-srebuildd
     - watch:
       - file: srebuildd

@@ -22,6 +22,7 @@ sproxyd:
       - pkgrepo: scality-repository
   service:
     - running
+    - enable: True
     - name: scality-sproxyd
     - watch:
       - file: sproxyd

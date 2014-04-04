@@ -19,6 +19,7 @@ sindexd:
       - pkgrepo: scality-repository
   service:
     - running
+    - enable: True
     - name: scality-sindexd
     - watch:
       - file: sindexd
