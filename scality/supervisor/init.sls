@@ -3,20 +3,10 @@
 
 include:
   - scality.req
-  - scality.repo
   - scality.python
+  - .{{ grains['os_family'] }}
 
 {%- set log_base = salt['pillar.get']('scality:log:base_dir', '/var/log') %}
-
-{%- if grains['os_family'] == 'Debian' %}
-scality-supervisor-debconf:
-  debconf.set:
-    - name: scality-supervisor
-    - data:
-        scality-supervisor/accept-license: {'type': 'boolean', 'value': True}
-    - require:
-      - pkg: debconf-utils
-{%- endif %}
 
 scality-supervisor:
   pkg:
@@ -28,26 +18,13 @@ scality-supervisor:
 {%- endif %}
     - require:
       - pkgrepo: scality-repository
-{%- if grains['os_family'] == 'Debian' %}
-      - debconf: scality-supervisor-debconf
-{%- endif %}
-{%- if grains['os_family'] == 'RedHat' %}
-  cmd.run:
-    - name: echo "y" | /usr/local/bin/scality-supervisor-config && sleep 5
-    - template: jinja
-    - unless: test -d /etc/scality-supervisor
-    - require:
-      - pkg: scality-supervisor
-{%- endif %}
   service:
     - running
+    - enable: true
     - watch:
       - pkg: scality-supervisor
-{%- if grains['os_family'] == 'RedHat' %}
     - require:
       - pkg: scality-supervisor
-      - cmd: scality-supervisor
-{%- endif %}
 
 {{ scality.apache_name }}:
   service:
@@ -74,11 +51,12 @@ scality-supervisor-config:
     - require:
       - scality_supervisor: check-supervisor-listening
 
-{% set rings = salt['pillar.get']('scality:rings', 'RING').split(',') %}
+{% set rings = scality.rings.split(',') %}
 
 {%- for ring in rings %}
-{{ ring }}:
+create-ring-{{ ring }}:
   scality_ring.present:
+    - name: {{ ring }}
     - require:
       - scality_supervisor: check-supervisor-listening
       - pkg: python-scalitycs

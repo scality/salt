@@ -46,18 +46,5 @@ sfused:
       - file: /etc/sfused.conf
       - file: /ring
 
-{% if  salt['pillar.get']('scality:config_rsyslog', True) %}
-/etc/rsyslog.d/scality-sfused.conf:
-  file:
-    - managed
-    - template: jinja
-    - source: salt://scality/sfused/rsyslog.conf.tmpl
-
-extend:
-  rsyslog:
-    service:
-      - watch:
-        - file: /etc/rsyslog.d/scality-sfused.conf
-{% endif %}
 
 

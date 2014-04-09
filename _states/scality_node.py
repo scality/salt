@@ -22,6 +22,14 @@ def listening(name,
         ret['comment'] = 'No process is listening on {0}:{1} ({2})'.format(address, port, -result)
     return ret
 
+def noop(name,
+          ring,
+          supervisor=None):
+    return {'name': name,
+           'changes': {},
+           'result': True,
+           'comment': 'Assuming node belongs to ring {0}'.format(ring)}
+
 def added(name,
           ring,
           supervisor=None):

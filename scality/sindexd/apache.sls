@@ -6,7 +6,7 @@ include:
     - scality.sd.apache
 
 extend:
-    sindexd:
+    scality-sindexd:
         pkg:
             - name: scality-sindexd-{{ scality.apache_name }}
         service:

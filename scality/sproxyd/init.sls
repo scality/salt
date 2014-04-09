@@ -5,11 +5,13 @@ include:
   - scality.req
   - scality.repo
   - scality.python
+  - .log
 
-{%- set prod_iface = salt['pillar.get']('scality:prod_iface', 'eth0') %}
-{%- set prod_ip = salt['network.ip_addrs'](interface=prod_iface)[0] %}
+{% from "scality/map.jinja" import scality with context %}
 
-sproxyd:
+{%- set prod_ip = salt['network.ip_addrs'](interface=scality.prod_iface)[0] %}
+
+scality-sproxyd:
   pkg:
 {%- if pillar['scality'] is defined and pillar['scality']['version'] is defined %}
     - version: {{ salt['pillar.get']('scality:version') }}
@@ -17,15 +19,13 @@ sproxyd:
 {%- else %}
     - latest
 {%- endif %}
-    - name: scality-sproxyd
     - require:
       - pkgrepo: scality-repository
   service:
     - running
     - enable: True
-    - name: scality-sproxyd
     - watch:
-      - file: sproxyd
+      - file: scality-sproxyd
   file:
     - managed
     - name: /etc/sproxyd.conf
@@ -33,20 +33,8 @@ sproxyd:
     - source: salt://scality/sproxyd/sproxyd.conf.tmpl
     - require:
       - pkg: python-scalitycs
+      - pkg: scality-sproxyd
   grains.present:
     - name: scality_sproxyd_address
     - value: {{ prod_ip }}:81
 
-{% if  salt['pillar.get']('scality:config_rsyslog', True) %}
-/etc/rsyslog.d/scality-sproxyd.conf:
-  file:
-    - managed
-    - template: jinja
-    - source: salt://scality/sproxyd/rsyslog.conf.tmpl
-
-extend:
-  rsyslog:
-    service:
-      - watch:
-        - file: /etc/rsyslog.d/scality-sproxyd.conf
-{% endif %}

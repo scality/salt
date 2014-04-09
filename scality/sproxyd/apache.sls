@@ -6,7 +6,7 @@ include:
     - scality.sd.apache
 
 extend:
-    sproxyd:
+    scality-sproxyd:
         pkg:
             - name: scality-sproxyd-{{ scality.apache_name }}
         service:

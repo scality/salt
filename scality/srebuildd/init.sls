@@ -5,8 +5,9 @@ include:
   - scality.req
   - scality.repo
   - scality.python
+  - .log
 
-srebuildd:
+scality-srebuildd:
   pkg:
 {%- if pillar['scality'] is defined and pillar['scality']['version'] is defined %}
     - version: {{ salt['pillar.get']('scality:version') }}
@@ -14,15 +15,13 @@ srebuildd:
 {%- else %}
     - latest
 {%- endif %}
-    - name: scality-srebuildd
     - require:
       - pkgrepo: scality-repository
   service:
     - running
     - enable: True
-    - name: scality-srebuildd
     - watch:
-      - file: srebuildd
+      - file: scality-srebuildd
   file:
     - managed
     - name: /etc/srebuildd.conf
@@ -30,17 +29,5 @@ srebuildd:
     - source: salt://scality/srebuildd/srebuildd.conf.tmpl
     - require:
       - pkg: python-scalitycs
+      - pkg: scality-srebuildd
 
-{% if  salt['pillar.get']('scality:config_rsyslog', True) %}
-/etc/rsyslog.d/scality-srebuildd.conf:
-  file:
-    - managed
-    - template: jinja
-    - source: salt://scality/srebuildd/rsyslog.conf.tmpl
-
-extend:
-  rsyslog:
-    service:
-      - watch:
-        - file: /etc/rsyslog.d/scality-srebuildd.conf
-{% endif %}
