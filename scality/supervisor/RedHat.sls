@@ -9,10 +9,10 @@ extend:
       - template: jinja
       - unless: test -d /etc/scality-supervisor
       - env:
-        - SCALITY_AUTH_FILE: /root/default_credentials.json
+        - SCALITY_AUTH_FILE: /tmp/scality-installer-credentials
       - require:
         - pkg: scality-supervisor
-        - file: /root/default_credentials.json
+        - file: /tmp/scality-installer-credentials
     service:
     - require:
       - cmd: scality-supervisor
