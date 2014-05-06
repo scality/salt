@@ -71,7 +71,8 @@ def _empty_string(*args, **kwargs):
 def bootstrap_list(ring, max_size=10, supervisor=None):
     '''
     Return a bootstrap list for nodes of the specified ring.
-    This list is suitable for insertion in a chord driver (sfused.conf, sproxyd.conf).
+    This list is suitable for insertion in a chord driver (in sfused.conf, sproxyd.conf)
+    in opposition to an srest driver that requires sproxyd endpoints.
 
     CLI Example::
 
