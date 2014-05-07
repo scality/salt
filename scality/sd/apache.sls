@@ -10,6 +10,7 @@
 sd-apache-frontend:
   service.running:
     - name: {{ scality.apache_name }}
+    - enable: True
 {%- if grains['os_family'] == 'RedHat' %}
     - watch:
         - file: /etc/httpd/conf/httpd.conf

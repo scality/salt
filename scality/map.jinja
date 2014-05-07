@@ -1,10 +1,28 @@
-{% set scality = salt['grains.filter_by']({
+# first define all defaults value
+{% set scality = {
+    'supervisor_ip': '127.0.0.1',
+    'prod_iface': 'eth0',
+    'rings': 'DATA',
+    'nb_nodes': '6',
+    'mount_prefix': '/scality/disk',
+    'nb_disks': '1',
+    'name_prefix': grains['id'] + '-n',
+    'ctor_name_prefix': grains['id'] + '-c',
+    'config_rsyslog': True,
+    'log': {
+        'base_dir': '/var/log'
+    }
+}%}
+# then update with OS family specific merged with pillar data
+{% do scality.update(salt['grains.filter_by']({
     'Debian': {
         'apache_name': 'apache2',
         'init_conf_dir': '/etc/default',
+        'service_require': 'pkg'
     },
     'RedHat': {
         'apache_name': 'httpd',
         'init_conf_dir': '/etc/sysconfig',
+        'service_require': 'cmd'
     },
-}, merge=salt['pillar.get']('scality:lookup'))%}
+}, merge=salt['pillar.get']('scality')))%}

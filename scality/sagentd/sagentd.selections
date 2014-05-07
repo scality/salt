@@ -1,1 +1,0 @@
-scality-sagentd	scality-sagentd/supervisor-ip	string	{{ salt['pillar.get']('scality:supervisor_ip', '127.0.0.1') }}

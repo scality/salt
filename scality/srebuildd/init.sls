@@ -5,8 +5,11 @@ include:
   - scality.req
   - scality.repo
   - scality.python
+  - .log
 
-srebuildd:
+{% from "scality/map.jinja" import scality with context %}
+
+scality-srebuildd:
   pkg:
 {%- if pillar['scality'] is defined and pillar['scality']['version'] is defined %}
     - version: {{ salt['pillar.get']('scality:version') }}
@@ -14,15 +17,13 @@ srebuildd:
 {%- else %}
     - latest
 {%- endif %}
-    - name: scality-srebuildd
     - require:
       - pkgrepo: scality-repository
   service:
     - running
     - enable: True
-    - name: scality-srebuildd
     - watch:
-      - file: srebuildd
+      - file: scality-srebuildd
   file:
     - managed
     - name: /etc/srebuildd.conf
@@ -31,16 +32,3 @@ srebuildd:
     - require:
       - pkg: python-scalitycs
 
-{% if  salt['pillar.get']('scality:config_rsyslog', True) %}
-/etc/rsyslog.d/scality-srebuildd.conf:
-  file:
-    - managed
-    - template: jinja
-    - source: salt://scality/srebuildd/rsyslog.conf.tmpl
-
-extend:
-  rsyslog:
-    service:
-      - watch:
-        - file: /etc/rsyslog.d/scality-srebuildd.conf
-{% endif %}

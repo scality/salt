@@ -4,14 +4,22 @@ include:
     - scality.sd.lighttpd
 
 extend:
-    sproxyd:
+    scality-sproxyd:
         pkg:
             - name: scality-sproxyd-lighttpd
         service:
           - watch:
             - pkg: scality-sproxyd-lighttpd
+        file:
+          - require:
+            - pkg: scality-sproxyd-lighttpd
+    sd-lighttpd-frontend:
+        service:
+          - watch:
+            - pkg: scality-sproxyd-lighttpd
+            - file: scality-sproxyd-lighttpd-conf
 
-sproxyd-lighttpd-conf:
+scality-sproxyd-lighttpd-conf:
   file.append:
     - name: /etc/lighttpd/lighttpd.conf
     - text: include "conf.d/sproxyd.conf"

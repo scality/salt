@@ -6,9 +6,16 @@ include:
     - scality.sd.apache
 
 extend:
-    sproxyd:
+    scality-sproxyd:
         pkg:
             - name: scality-sproxyd-{{ scality.apache_name }}
+        service:
+          - watch:
+            - pkg: scality-sproxyd-{{ scality.apache_name }}
+        file:
+          - require:
+            - pkg: scality-sproxyd-{{ scality.apache_name }}
+    sd-apache-frontend:
         service:
           - watch:
             - pkg: scality-sproxyd-{{ scality.apache_name }}

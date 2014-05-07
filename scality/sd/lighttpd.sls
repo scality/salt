@@ -5,22 +5,23 @@ sd-lighttpd-frontend:
   service:
     - running
     - name: lighttpd
+    - enable: True
     - watch:
       - file: /etc/lighttpd/lighttpd.conf
 
-sd-lighttpd-port:
+sd-lighttpd-set-port-81:
   file.replace:
     - name: /etc/lighttpd/lighttpd.conf
     - pattern: 'server.port = .*'
     - repl: 'server.port = 81'
 
-sd-lighttpd-ipv6:
+sd-lighttpd-disable-ipv6:
   file.replace:
     - name: /etc/lighttpd/lighttpd.conf
     - pattern: 'server.use-ipv6 = "enable"'
     - repl: 'server.use-ipv6 = "disable"'
 
-sd-lighttpd-fastcgi:
+sd-lighttpd-enable-fastcgi:
   file.append:
     - name: /etc/lighttpd/lighttpd.conf
     - text: include "conf.d/fastcgi.conf"
