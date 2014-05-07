@@ -33,7 +33,6 @@ scality-sproxyd:
     - source: salt://scality/sproxyd/sproxyd.conf.tmpl
     - require:
       - pkg: python-scalitycs
-      - pkg: scality-sproxyd
   grains.present:
     - name: scality_sproxyd_address
     - value: {{ prod_ip }}:81

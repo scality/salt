@@ -10,6 +10,14 @@ extend:
         service:
           - watch:
             - pkg: scality-srebuildd-lighttpd
+        file:
+          - require:
+            - pkg: scality-srebuildd-lighttpd
+    sd-lighttpd-frontend:
+        service:
+          - watch:
+            - pkg: scality-srebuildd-lighttpd
+            - file: scality-srebuildd-lighttpd-conf
 
 scality-srebuildd-lighttpd-conf:
   file.append:

@@ -7,6 +7,8 @@ include:
   - scality.python
   - .log
 
+{% from "scality/map.jinja" import scality with context %}
+
 scality-srebuildd:
   pkg:
 {%- if pillar['scality'] is defined and pillar['scality']['version'] is defined %}
@@ -29,5 +31,4 @@ scality-srebuildd:
     - source: salt://scality/srebuildd/srebuildd.conf.tmpl
     - require:
       - pkg: python-scalitycs
-      - pkg: scality-srebuildd
 

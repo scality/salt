@@ -12,4 +12,11 @@ extend:
         service:
           - watch:
             - pkg: scality-sproxyd-{{ scality.apache_name }}
+        file:
+          - require:
+            - pkg: scality-sproxyd-{{ scality.apache_name }}
+    sd-apache-frontend:
+        service:
+          - watch:
+            - pkg: scality-sproxyd-{{ scality.apache_name }}
 
