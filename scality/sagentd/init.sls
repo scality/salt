@@ -24,7 +24,6 @@ scality-sagentd:
     - running
     - enable: True
     - require:
-      - pkg: scality-sagentd
       - service: ntpd
     - watch:
       - pkg: scality-sagentd

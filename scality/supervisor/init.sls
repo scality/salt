@@ -23,8 +23,6 @@ scality-supervisor:
     - enable: true
     - watch:
       - pkg: scality-supervisor
-    - require:
-      - pkg: scality-supervisor
 
 {{ scality.apache_name }}:
   service:
@@ -35,8 +33,6 @@ scality-supervisor:
 
 check-supervisor-listening:
   scality_supervisor.listening:
-    - require:
-      - service: scality-supervisor
     - watch:
       - service: scality-supervisor
       - service: ntpd

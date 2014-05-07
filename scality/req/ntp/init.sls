@@ -28,8 +28,6 @@ ntpd:
     - name: ntpd
 {% endif %}
     - enable: True
-    - require:
-      - pkg: ntp
 {%- if ntp_servers %}
       - file: add-new-ntp-servers
 {%- endif %}

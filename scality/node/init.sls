@@ -28,8 +28,6 @@ scality-node:
     - running
     - enable: true
     - sig: bizstorenode
-    - require:
-      - pkg: scality-node
     - watch:
       - pkg: scality-node
       - file: scality-node-init-conf

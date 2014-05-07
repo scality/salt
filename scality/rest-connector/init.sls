@@ -17,7 +17,5 @@ scality-rest-connector:
   service:
     - running
     - enable: true
-    - require:
-      - pkg: scality-rest-connector
     - watch:
       - pkg: scality-rest-connector
